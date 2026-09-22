@@ -999,15 +999,52 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group flex-1">
-              <label for="partnerLogoUrl">URL do Logo (Imagem)</label>
-              <input type="url" id="partnerLogoUrl" placeholder="https://exemplo.com/logo.jpg">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="partnerLogoUrl" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 700; color: #0F172A;"><i class="fa-solid fa-image" style="color: var(--primary);"></i> Logo / Imagem da Academia ou Parceiro</span>
+              <span id="partnerLogoStatusBadge" class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;">URL ou Upload</span>
+            </label>
+
+            <!-- Card Interativo de Upload do Computador & Preview -->
+            <div class="avatar-upload-card" style="display: flex; gap: 14px; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 12px;">
+              <!-- Preview Quadrado do Logo -->
+              <div style="position: relative; width: 64px; height: 64px; flex-shrink: 0;">
+                <img id="partnerLogoPreview" src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150" alt="Logo Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); border: 2px solid #0284C7; box-shadow: 0 2px 6px rgba(0,0,0,0.08);" onerror="this.src='https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150'">
+                <button type="button" onclick="document.getElementById('partnerLogoFileInput').click()" title="Escolher logo do computador" style="position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; border-radius: 50%; background: #0284C7; color: #FFFFFF; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
+              </div>
+
+              <!-- Controles de Upload do Computador e Input de URL -->
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;">
+                  <!-- Input Oculto de Arquivo -->
+                  <input type="file" id="partnerLogoFileInput" accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml" style="display: none;" onchange="app.handlePartnerLogoFileUpload(event)">
+
+                  <!-- Botão Carregar do Computador -->
+                  <button type="button" class="btn btn-sm btn-primary" id="btnUploadPartnerLogo" onclick="document.getElementById('partnerLogoFileInput').click()" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-upload"></i> Carregar do Computador
+                  </button>
+
+                  <!-- Botão Limpar / Remover Logo -->
+                  <button type="button" id="btnRemovePartnerLogo" class="btn btn-sm btn-outline" onclick="app.removePartnerLogo()" title="Limpar logo / usar padrão" style="font-size: 11px; padding: 6px 10px; color: #EF4444; border-color: #FECACA; background: #FFFFFF;">
+                    <i class="fa-solid fa-trash"></i> Remover
+                  </button>
+                </div>
+
+                <div style="position: relative;">
+                  <input type="text" id="partnerLogoUrl" placeholder="https://... ou caminho do arquivo" value="" oninput="app.updatePartnerLogoPreviewFromUrl(this.value)" style="font-size: 12px; padding: 6px 10px; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); width: 100%;">
+                </div>
+                <small style="display: block; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                  Selecione o logotipo do parceiro no seu computador (PNG, JPG, SVG, WebP) ou informe uma URL externa.
+                </small>
+              </div>
             </div>
-            <div class="form-group flex-1">
-              <label for="partnerWebsite">Website / Instagram</label>
-              <input type="url" id="partnerWebsite" placeholder="https://parceiro.com.br">
-            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="partnerWebsite">Website / Instagram do Parceiro</label>
+            <input type="url" id="partnerWebsite" placeholder="https://parceiro.com.br">
           </div>
 
           <!-- Seção: Carteira do Parceiro (Link Exclusivo para Alunos e Indicações) -->
@@ -1163,9 +1200,47 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="eventBannerUrl">URL da Imagem / Banner do Evento</label>
-            <input type="url" id="eventBannerUrl" placeholder="https://images.unsplash.com/...">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="eventBannerUrl" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 700; color: #0F172A;"><i class="fa-solid fa-image" style="color: var(--primary);"></i> Imagem / Banner de Divulgação do Evento</span>
+              <span id="eventBannerStatusBadge" class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;">URL ou Upload</span>
+            </label>
+
+            <!-- Card Interativo de Upload do Computador & Preview -->
+            <div class="avatar-upload-card" style="display: flex; gap: 14px; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 12px;">
+              <!-- Preview Retangular do Banner -->
+              <div style="position: relative; width: 110px; height: 68px; flex-shrink: 0;">
+                <img id="eventBannerPreview" src="https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600" alt="Banner Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); border: 2px solid #0284C7; box-shadow: 0 2px 6px rgba(0,0,0,0.08);" onerror="this.src='https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'">
+                <button type="button" onclick="document.getElementById('eventBannerFileInput').click()" title="Escolher banner do computador" style="position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; border-radius: 50%; background: #0284C7; color: #FFFFFF; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
+              </div>
+
+              <!-- Controles de Upload do Computador e Input de URL -->
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;">
+                  <!-- Input Oculto de Arquivo -->
+                  <input type="file" id="eventBannerFileInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;" onchange="app.handleEventBannerFileUpload(event)">
+
+                  <!-- Botão Carregar do Computador -->
+                  <button type="button" class="btn btn-sm btn-primary" id="btnUploadEventBanner" onclick="document.getElementById('eventBannerFileInput').click()" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-upload"></i> Carregar do Computador
+                  </button>
+
+                  <!-- Botão Limpar / Remover Banner -->
+                  <button type="button" id="btnRemoveEventBanner" class="btn btn-sm btn-outline" onclick="app.removeEventBanner()" title="Limpar banner / usar padrão" style="font-size: 11px; padding: 6px 10px; color: #EF4444; border-color: #FECACA; background: #FFFFFF;">
+                    <i class="fa-solid fa-trash"></i> Remover
+                  </button>
+                </div>
+
+                <div style="position: relative;">
+                  <input type="text" id="eventBannerUrl" placeholder="https://... ou caminho do arquivo" value="" oninput="app.updateEventBannerPreviewFromUrl(this.value)" style="font-size: 12px; padding: 6px 10px; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); width: 100%;">
+                </div>
+                <small style="display: block; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                  Selecione uma imagem de capa/banner do computador (proporção 16:9 recomendada) ou informe uma URL externa.
+                </small>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -1692,6 +1767,6 @@
   </div>
 
   <!-- Script principal da aplicação -->
-  <script src="./js/app-unyco.js?v=20260922_11"></script>
+  <script src="./js/app-unyco.js?v=20260922_12"></script>
 </body>
 </html>

@@ -1,0 +1,5 @@
+# Ignorar arquivos enviados pelos usuários, mantendo as pastas
+*
+!.gitignore
+!*/
+!.gitkeep

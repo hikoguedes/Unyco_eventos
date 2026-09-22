@@ -976,6 +976,262 @@ window.app = {
     this.showToast('Foto removida. Utilizando avatar padrão.', 'info');
   },
 
+  // ==========================================================
+  // HELPERS DE UPLOAD DE LOGO DO PARCEIRO
+  // ==========================================================
+  updatePartnerLogoPreviewFromUrl(url) {
+    const preview = document.getElementById('partnerLogoPreview');
+    const badge = document.getElementById('partnerLogoStatusBadge');
+    if (!preview) return;
+
+    const defaultImg = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+    const targetUrl = (url && url.trim()) ? this.urlWithBase(url.trim()) : defaultImg;
+    preview.src = targetUrl;
+
+    if (badge) {
+      if (url && (url.startsWith('/uploads') || url.startsWith('data:image'))) {
+        badge.textContent = 'Arquivo do Computador';
+        badge.style.background = '#DCFCE7';
+        badge.style.color = '#166534';
+      } else if (url && url.startsWith('http')) {
+        badge.textContent = 'URL Externa';
+        badge.style.background = '#EFF6FF';
+        badge.style.color = '#1D4ED8';
+      } else {
+        badge.textContent = 'Logo Padrão';
+        badge.style.background = '#F1F5F9';
+        badge.style.color = '#64748B';
+      }
+    }
+  },
+
+  async handlePartnerLogoFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Por favor selecione um arquivo de imagem válido (PNG, JPG, SVG ou WebP).', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const maxBytes = 8 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.showToast('A imagem selecionada excede o limite máximo de 8MB.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const uploadBtn = document.getElementById('btnUploadPartnerLogo');
+    const preview = document.getElementById('partnerLogoPreview');
+    const badge = document.getElementById('partnerLogoStatusBadge');
+    const urlInput = document.getElementById('partnerLogoUrl');
+
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      if (preview) preview.src = dataUrl;
+
+      try {
+        const res = await this.apiFetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: dataUrl,
+            filename: file.name,
+            folder: 'partners'
+          })
+        });
+
+        const json = await res.json();
+
+        if (json.success && json.url) {
+          if (urlInput) urlInput.value = json.url;
+          if (preview) preview.src = this.urlWithBase(json.url);
+          if (badge) {
+            badge.textContent = 'Arquivo do Computador';
+            badge.style.background = '#DCFCE7';
+            badge.style.color = '#166534';
+          }
+          this.showToast('Logo do parceiro carregado com sucesso!', 'success');
+        } else {
+          if (urlInput) urlInput.value = dataUrl;
+          if (badge) {
+            badge.textContent = 'Imagem Local';
+            badge.style.background = '#FEF3C7';
+            badge.style.color = '#B45309';
+          }
+          this.showToast('Logo carregado com sucesso!', 'info');
+        }
+      } catch (err) {
+        console.warn('Fallback para Base64 local:', err);
+        if (urlInput) urlInput.value = dataUrl;
+        this.showToast('Logo carregado localmente!', 'info');
+      } finally {
+        if (uploadBtn) {
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar do Computador';
+        }
+        event.target.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      this.showToast('Erro ao ler arquivo do computador.', 'error');
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar do Computador';
+      }
+      event.target.value = '';
+    };
+
+    reader.readAsDataURL(file);
+  },
+
+  removePartnerLogo() {
+    const defaultLogo = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+    const input = document.getElementById('partnerLogoUrl');
+    const fileInput = document.getElementById('partnerLogoFileInput');
+    if (input) input.value = '';
+    if (fileInput) fileInput.value = '';
+    this.updatePartnerLogoPreviewFromUrl(defaultLogo);
+    this.showToast('Logo removido. Utilizando padrão.', 'info');
+  },
+
+  // ==========================================================
+  // HELPERS DE UPLOAD DE BANNER DO EVENTO
+  // ==========================================================
+  updateEventBannerPreviewFromUrl(url) {
+    const preview = document.getElementById('eventBannerPreview');
+    const badge = document.getElementById('eventBannerStatusBadge');
+    if (!preview) return;
+
+    const defaultImg = 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600';
+    const targetUrl = (url && url.trim()) ? this.urlWithBase(url.trim()) : defaultImg;
+    preview.src = targetUrl;
+
+    if (badge) {
+      if (url && (url.startsWith('/uploads') || url.startsWith('data:image'))) {
+        badge.textContent = 'Arquivo do Computador';
+        badge.style.background = '#DCFCE7';
+        badge.style.color = '#166534';
+      } else if (url && url.startsWith('http')) {
+        badge.textContent = 'URL Externa';
+        badge.style.background = '#EFF6FF';
+        badge.style.color = '#1D4ED8';
+      } else {
+        badge.textContent = 'Banner Padrão';
+        badge.style.background = '#F1F5F9';
+        badge.style.color = '#64748B';
+      }
+    }
+  },
+
+  async handleEventBannerFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Por favor selecione um arquivo de imagem válido (PNG, JPG ou WebP).', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const maxBytes = 8 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.showToast('A imagem selecionada excede o limite máximo de 8MB.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const uploadBtn = document.getElementById('btnUploadEventBanner');
+    const preview = document.getElementById('eventBannerPreview');
+    const badge = document.getElementById('eventBannerStatusBadge');
+    const urlInput = document.getElementById('eventBannerUrl');
+
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      if (preview) preview.src = dataUrl;
+
+      try {
+        const res = await this.apiFetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: dataUrl,
+            filename: file.name,
+            folder: 'events'
+          })
+        });
+
+        const json = await res.json();
+
+        if (json.success && json.url) {
+          if (urlInput) urlInput.value = json.url;
+          if (preview) preview.src = this.urlWithBase(json.url);
+          if (badge) {
+            badge.textContent = 'Arquivo do Computador';
+            badge.style.background = '#DCFCE7';
+            badge.style.color = '#166534';
+          }
+          this.showToast('Banner do evento carregado com sucesso!', 'success');
+        } else {
+          if (urlInput) urlInput.value = dataUrl;
+          if (badge) {
+            badge.textContent = 'Imagem Local';
+            badge.style.background = '#FEF3C7';
+            badge.style.color = '#B45309';
+          }
+          this.showToast('Banner carregado com sucesso!', 'info');
+        }
+      } catch (err) {
+        console.warn('Fallback para Base64 local:', err);
+        if (urlInput) urlInput.value = dataUrl;
+        this.showToast('Banner carregado localmente!', 'info');
+      } finally {
+        if (uploadBtn) {
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar do Computador';
+        }
+        event.target.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      this.showToast('Erro ao ler arquivo do computador.', 'error');
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar do Computador';
+      }
+      event.target.value = '';
+    };
+
+    reader.readAsDataURL(file);
+  },
+
+  removeEventBanner() {
+    const defaultBanner = 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600';
+    const input = document.getElementById('eventBannerUrl');
+    const fileInput = document.getElementById('eventBannerFileInput');
+    if (input) input.value = '';
+    if (fileInput) fileInput.value = '';
+    this.updateEventBannerPreviewFromUrl(defaultBanner);
+    this.showToast('Banner removido. Utilizando imagem padrão.', 'info');
+  },
+
   // Troca de Abas
   switchTab(tabName) {
     this.state.currentTab = tabName;
@@ -2357,6 +2613,13 @@ window.app = {
     document.getElementById('partnerFormId').value = '';
     document.getElementById('partnerModalTitle').textContent = 'Cadastrar Novo Parceiro';
 
+    const defaultLogo = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+    const logoInput = document.getElementById('partnerLogoUrl');
+    if (logoInput) logoInput.value = '';
+    this.updatePartnerLogoPreviewFromUrl(defaultLogo);
+    const logoFileInput = document.getElementById('partnerLogoFileInput');
+    if (logoFileInput) logoFileInput.value = '';
+
     // Configurar seção de Link da LP
     const notice = document.getElementById('partnerLpNewNotice');
     const controls = document.getElementById('partnerLpActiveControls');
@@ -2381,6 +2644,11 @@ window.app = {
     document.getElementById('partnerStatus').value = partner.status || 'ativo';
     document.getElementById('partnerLogoUrl').value = partner.logo_url || '';
     document.getElementById('partnerWebsite').value = partner.website || '';
+
+    const logoVal = partner.logo_url || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+    this.updatePartnerLogoPreviewFromUrl(logoVal);
+    const logoFileInput = document.getElementById('partnerLogoFileInput');
+    if (logoFileInput) logoFileInput.value = '';
 
     // Configurar seção de Link da Carteira com o link gerado
     const notice = document.getElementById('partnerLpNewNotice');
@@ -2490,6 +2758,13 @@ window.app = {
     document.getElementById('eventFormId').value = '';
     document.getElementById('eventModalTitle').textContent = 'Cadastrar Novo Evento';
 
+    const defaultBanner = 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600';
+    const bannerInput = document.getElementById('eventBannerUrl');
+    if (bannerInput) bannerInput.value = '';
+    this.updateEventBannerPreviewFromUrl(defaultBanner);
+    const bannerFileInput = document.getElementById('eventBannerFileInput');
+    if (bannerFileInput) bannerFileInput.value = '';
+
     if (preselectedPartnerId) {
       document.getElementById('eventParceiroId').value = preselectedPartnerId;
     }
@@ -2534,6 +2809,11 @@ window.app = {
     document.getElementById('eventStatus').value = ev.status || 'Agendado';
     document.getElementById('eventBannerUrl').value = ev.banner_url || '';
     document.getElementById('eventDescricao').value = ev.descricao || '';
+
+    const bannerVal = ev.banner_url || 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600';
+    this.updateEventBannerPreviewFromUrl(bannerVal);
+    const bannerFileInput = document.getElementById('eventBannerFileInput');
+    if (bannerFileInput) bannerFileInput.value = '';
 
     document.getElementById('eventModalTitle').textContent = 'Editar Evento';
     this.openModal('eventModal');
