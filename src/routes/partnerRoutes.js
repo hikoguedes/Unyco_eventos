@@ -5,6 +5,7 @@ const { authorize } = require('../middlewares/authMiddleware');
 
 router.get('/', partnerController.getAllPartners);
 router.get('/:id', partnerController.getPartnerById);
+router.get('/:id/wallet', partnerController.getPartnerWallet);
 router.post('/', authorize(['ADMIN', 'REPRESENTANTE']), partnerController.createPartner);
 router.put('/:id', authorize(['ADMIN', 'REPRESENTANTE']), partnerController.updatePartner);
 router.delete('/:id', authorize(['ADMIN', 'REPRESENTANTE']), partnerController.deletePartner);

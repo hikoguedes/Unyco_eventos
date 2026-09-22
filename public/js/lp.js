@@ -13,7 +13,7 @@ const lp = {
 
   init() {
     const params = new URLSearchParams(window.location.search);
-    this.partnerId = params.get('parceiro') || params.get('partnerId') || params.get('partner');
+    this.partnerId = params.get('carteira') || params.get('parceiro') || params.get('partnerId') || params.get('partner');
     this.eventId = params.get('id') || params.get('eventId');
 
     if (!this.partnerId && !this.eventId) {
@@ -78,6 +78,7 @@ const lp = {
       if (json.success && json.data) {
         this.partnerData = json.data;
         this.updateBackButton();
+        this.updatePartnerReferralBanner();
       }
     } catch (e) {
       console.warn('Erro ao carregar dados do parceiro:', e);
@@ -90,8 +91,17 @@ const lp = {
     if (nav && this.partnerData) {
       nav.style.display = 'block';
       if (text) {
-        text.textContent = `Voltar para todos os eventos da ${this.partnerData.nome_fantasia}`;
+        text.textContent = `Voltar para todos os eventos de ${this.partnerData.nome_fantasia}`;
       }
+    }
+  },
+
+  updatePartnerReferralBanner() {
+    const badge = document.getElementById('lpPartnerReferralBadge');
+    const nameEl = document.getElementById('lpPartnerReferralName');
+    if (badge && this.partnerData && this.partnerId) {
+      badge.style.display = 'flex';
+      if (nameEl) nameEl.textContent = this.partnerData.nome_fantasia;
     }
   },
 
@@ -349,6 +359,8 @@ const lp = {
       btn.innerHTML = `<i class="fa-solid fa-ban"></i> Inscrições Encerradas`;
       btn.style.background = '#94A3B8';
     }
+
+    this.updatePartnerReferralBanner();
   },
 
   renderHotels() {
@@ -476,6 +488,8 @@ const lp = {
       precisa_hospedagem: precisaHospedagem,
       hospedagem_hotel_id: precisaHospedagem && hotelSelectVal ? parseInt(hotelSelectVal, 10) : null,
       hospedagem_qtd_pessoas: precisaHospedagem ? parseInt(qtdHospedesVal || 1, 10) : 1,
+      parceiro_indicador_id: this.partnerId ? parseInt(this.partnerId, 10) : null,
+      origem_inscricao: this.partnerId ? 'CARTEIRA_PARCEIRO' : 'DIRETA',
     };
 
     try {

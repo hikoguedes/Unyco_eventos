@@ -18,6 +18,8 @@ window.app = {
     currentEventForRegistrations: null,
     stats: null,
     selectedPartnerForDetails: null,
+    selectedPartnerWallet: null,
+    walletStudentsCache: [],
   },
 
   // Helper para urls com prefixo de subdiretório
@@ -1132,18 +1134,22 @@ window.app = {
           ${p.responsavel ? `<div class="partner-detail-item"><i class="fa-solid fa-user-tie"></i> <span>Resp: ${this.escapeHtml(p.responsavel)}</span></div>` : ''}
         </div>
 
-        <!-- Botão Rápido: Link da LP para Academia & Alunos -->
-        <div style="display: flex; gap: 6px; margin: 12px 0 14px 0; flex-wrap: wrap;">
-          <button class="btn btn-sm btn-primary flex-1" onclick="app.copyPartnerLPLink(${p.id})" title="Copiar Link da LP deste parceiro para alunos e atletas">
-            <i class="fa-solid fa-link"></i> Link da LP
+        <!-- Botões: Carteira do Parceiro & Monitoramento de Alunos -->
+        <div style="display: flex; gap: 6px; margin: 12px 0 6px 0; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary flex-1" onclick="app.copyPartnerWalletLink(${p.id})" title="Copiar Link da Carteira para alunos e atletas">
+            <i class="fa-solid fa-wallet"></i> Link da Carteira
           </button>
-          <a href="${this.getPartnerLPUrl(p.id)}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir Landing Page da academia/parceiro">
+          <a href="${this.getPartnerWalletUrl(p.id)}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir Carteira Pública de Inscrição">
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
           </a>
-          <button class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A;" onclick="app.sharePartnerLpWhatsApp(${p.id})" title="Compartilhar no WhatsApp com alunos e atletas">
+          <button class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A;" onclick="app.sharePartnerWalletWhatsApp(${p.id})" title="Compartilhar Carteira no WhatsApp com alunos e atletas">
             <i class="fa-brands fa-whatsapp"></i> WhatsApp
           </button>
         </div>
+
+        <button class="btn btn-sm" style="width: 100%; margin-bottom: 12px; background: #EFF6FF; border: 1px solid #BFDBFE; color: #1D4ED8; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 10px; border-radius: var(--radius-sm);" onclick="app.openPartnerWalletModal(${p.id})" title="Monitorar Alunos e Indicações deste Parceiro">
+          <i class="fa-solid fa-user-graduate"></i> Alunos na Carteira: <strong>${p.total_alunos_carteira || 0} alunos</strong>
+        </button>
 
         <div class="partner-card-footer">
           <button class="btn btn-sm btn-outline" onclick="app.viewPartnerDetails(${p.id})">
@@ -1323,65 +1329,267 @@ window.app = {
     }
   },
 
-  // Retorna a URL da Landing Page oficial do parceiro / academia
-  getPartnerLPUrl(partnerId) {
+  // Retorna a URL da Carteira oficial do parceiro / academia
+  getPartnerWalletUrl(partnerId) {
     const origin = window.location.origin;
     let base = window.BASE_PATH;
     if (!base && typeof window !== 'undefined' && window.location && window.location.pathname.includes('/unycoeventos')) {
       base = '/unycoeventos';
     }
     base = (base || '').replace(/\/$/, '');
-    return `${origin}${base}/lp.html?parceiro=${partnerId}`;
+    return `${origin}${base}/lp.html?carteira=${partnerId}`;
   },
 
-  // Copiar link público da LP do parceiro
-  copyPartnerLPLink(partnerId) {
-    const url = this.getPartnerLPUrl(partnerId);
+  // Alias retrocompatível
+  getPartnerLPUrl(partnerId) {
+    return this.getPartnerWalletUrl(partnerId);
+  },
+
+  // Copiar link público da Carteira do parceiro
+  copyPartnerWalletLink(partnerId) {
+    const url = this.getPartnerWalletUrl(partnerId);
     const partner = this.state.partners.find(p => p.id === partnerId);
     const partnerName = partner ? partner.nome_fantasia : 'Parceiro';
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
-        this.showToast(`Link da LP de ${partnerName} copiado com sucesso! Compartilhe com seus alunos e atletas.\n${url}`, 'success');
+        this.showToast(`Link da Carteira de ${partnerName} copiado com sucesso! Compartilhe com seus alunos e atletas.\n${url}`, 'success');
       }).catch(() => {
-        prompt(`Copie o Link da LP de ${partnerName} para os alunos e atletas:`, url);
+        prompt(`Copie o Link da Carteira de ${partnerName} para os alunos e atletas:`, url);
       });
     } else {
-      prompt(`Copie o Link da LP de ${partnerName} para os alunos e atletas:`, url);
+      prompt(`Copie o Link da Carteira de ${partnerName} para os alunos e atletas:`, url);
     }
   },
 
+  copyPartnerLPLink(partnerId) {
+    this.copyPartnerWalletLink(partnerId);
+  },
+
   // Copiar link a partir do formulário de parceiro
-  copyPartnerLPLinkFromModal() {
+  copyPartnerWalletLinkFromModal() {
     const input = document.getElementById('partnerLpUrlInput');
     const url = input ? input.value : '';
     if (!url) return;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
-        this.showToast('Link da LP copiado para a área de transferência!', 'success');
+        this.showToast('Link da Carteira copiado para a área de transferência!', 'success');
       }).catch(() => {
-        prompt('Copie o Link da LP abaixo:', url);
+        prompt('Copie o Link da Carteira abaixo:', url);
       });
     } else {
-      prompt('Copie o Link da LP abaixo:', url);
+      prompt('Copie o Link da Carteira abaixo:', url);
     }
   },
 
-  // Compartilhar no WhatsApp a partir da lista
-  sharePartnerLpWhatsApp(partnerId) {
+  copyPartnerLPLinkFromModal() {
+    this.copyPartnerWalletLinkFromModal();
+  },
+
+  // Copiar link a partir do modal da carteira
+  copyPartnerWalletLinkFromWalletModal() {
+    const input = document.getElementById('walletModalLinkInput');
+    const url = input ? input.value : '';
+    if (!url) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.showToast('Link da Carteira copiado com sucesso!', 'success');
+      }).catch(() => {
+        prompt('Copie o Link da Carteira abaixo:', url);
+      });
+    } else {
+      prompt('Copie o Link da Carteira abaixo:', url);
+    }
+  },
+
+  // Compartilhar Carteira no WhatsApp a partir da lista
+  sharePartnerWalletWhatsApp(partnerId) {
     const partner = this.state.partners.find(p => p.id === partnerId);
     const partnerName = partner ? partner.nome_fantasia : 'nossa academia';
-    const url = this.getPartnerLPUrl(partnerId);
-    const msg = encodeURIComponent(`Olá alunos e atletas da ${partnerName}! 🏅\n\nAcesse nosso portal oficial de eventos esportivos, inscrições e hotéis com tarifas exclusivas UNYCO:\n${url}`);
+    const url = this.getPartnerWalletUrl(partnerId);
+    const msg = encodeURIComponent(`Olá alunos e atletas da ${partnerName}! 🏅\n\nAcesse nossa Carteira Oficial para inscrições em etapas esportivas e condições exclusivas:\n${url}`);
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
   },
 
-  // Compartilhar no WhatsApp a partir do modal
-  sharePartnerLpWhatsAppFromModal() {
+  sharePartnerLpWhatsApp(partnerId) {
+    this.sharePartnerWalletWhatsApp(partnerId);
+  },
+
+  // Compartilhar no WhatsApp a partir do modal de parceiro
+  sharePartnerWalletWhatsAppFromModal() {
     const nome = document.getElementById('partnerNomeFantasia')?.value.trim() || 'nossa academia';
     const url = document.getElementById('partnerLpUrlInput')?.value;
     if (!url) return;
-    const msg = encodeURIComponent(`Olá alunos e atletas da ${nome}! 🏅\n\nAcesse nosso portal oficial de eventos esportivos, inscrições e hotéis com tarifas exclusivas UNYCO:\n${url}`);
+    const msg = encodeURIComponent(`Olá alunos e atletas da ${nome}! 🏅\n\nAcesse nossa Carteira Oficial para inscrições em etapas esportivas e condições exclusivas:\n${url}`);
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  },
+
+  sharePartnerLpWhatsAppFromModal() {
+    this.sharePartnerWalletWhatsAppFromModal();
+  },
+
+  // Compartilhar no WhatsApp a partir do modal da carteira
+  sharePartnerWalletWhatsAppFromWalletModal() {
+    const nome = this.state.selectedPartnerWallet?.parceiro?.nome_fantasia || 'nossa academia';
+    const url = document.getElementById('walletModalLinkInput')?.value;
+    if (!url) return;
+    const msg = encodeURIComponent(`Olá alunos e atletas da ${nome}! 🏅\n\nAcesse nossa Carteira Oficial para inscrições em etapas esportivas e condições exclusivas:\n${url}`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  },
+
+  // Abrir Modal de Monitoramento da Carteira do Parceiro
+  async openPartnerWalletModal(partnerId) {
+    try {
+      const res = await this.apiFetch(`/api/partners/${partnerId}/wallet`);
+      const json = await res.json();
+
+      if (!json.success) {
+        this.showToast('Erro ao carregar dados da carteira do parceiro.', 'error');
+        return;
+      }
+
+      const parceiro = json.parceiro || json.partner || (json.data && json.data.parceiro) || {};
+      const resumo = json.resumo || json.summary || (json.data && json.data.resumo) || {};
+      const alunos = Array.isArray(json.data) ? json.data : (json.alunos || (json.data && json.data.alunos) || []);
+
+      this.state.selectedPartnerWallet = { parceiro, resumo, alunos };
+      this.state.walletStudentsCache = alunos;
+
+      // Preencher Cabeçalho
+      const nameEl = document.getElementById('walletModalPartnerName');
+      const metaEl = document.getElementById('walletModalPartnerMeta');
+      if (nameEl) nameEl.textContent = `Carteira: ${parceiro.nome_fantasia}`;
+      if (metaEl) metaEl.textContent = `${parceiro.categoria || 'Parceiro'} • Monitoramento de Alunos e Inscrições Indicadas`;
+
+      // Preencher Link da Carteira
+      const walletUrl = this.getPartnerWalletUrl(parceiro.id);
+      const linkInput = document.getElementById('walletModalLinkInput');
+      const openBtn = document.getElementById('walletModalOpenBtn');
+      if (linkInput) linkInput.value = walletUrl;
+      if (openBtn) openBtn.href = walletUrl;
+
+      // Preencher KPIs
+      const kpiAlunos = document.getElementById('walletKpiTotalAlunos');
+      const kpiEventos = document.getElementById('walletKpiTotalEventos');
+      const kpiReceita = document.getElementById('walletKpiTotalReceita');
+      const kpiComissao = document.getElementById('walletKpiTotalComissao');
+
+      if (kpiAlunos) kpiAlunos.textContent = resumo.total_alunos || 0;
+      if (kpiEventos) kpiEventos.textContent = resumo.total_eventos_distintos || 0;
+      if (kpiReceita) kpiReceita.textContent = `R$ ${(resumo.total_receita_gerada || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      if (kpiComissao) kpiComissao.textContent = `R$ ${(resumo.total_comissao_acumulada || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      // Resetar campo de busca e renderizar tabela
+      const searchInput = document.getElementById('walletStudentSearchInput');
+      if (searchInput) searchInput.value = '';
+
+      this.renderWalletStudentsTable(this.state.walletStudentsCache);
+
+      this.openModal('partnerWalletModal');
+    } catch (err) {
+      console.error('Erro ao abrir carteira do parceiro:', err);
+      this.showToast('Erro de comunicação ao carregar a carteira.', 'error');
+    }
+  },
+
+  // Renderizar a tabela de alunos da carteira
+  renderWalletStudentsTable(students) {
+    const wrapper = document.getElementById('walletStudentsTableWrapper');
+    const countEl = document.getElementById('walletStudentsCount');
+    if (countEl) countEl.textContent = students ? students.length : 0;
+
+    if (!wrapper) return;
+
+    if (!students || students.length === 0) {
+      wrapper.innerHTML = `
+        <div style="padding: 36px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+          <i class="fa-solid fa-user-graduate" style="font-size: 36px; color: #CBD5E1; margin-bottom: 12px; display: block;"></i>
+          <strong>Nenhum aluno ou indicação registrada nesta Carteira ainda.</strong><br>
+          <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px; display: block;">
+            Compartilhe o Link da Carteira acima com seus alunos e atletas para que as inscrições apareçam aqui separadamente.
+          </span>
+        </div>
+      `;
+      return;
+    }
+
+    wrapper.innerHTML = `
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Aluno / Atleta</th>
+            <th>Contato</th>
+            <th>Evento Indicado</th>
+            <th>Data Inscrição</th>
+            <th>Valor Pago</th>
+            <th>Comissão</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${students.map(s => {
+            const dateObj = new Date(s.created_at);
+            const regDate = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const valor = parseFloat(s.valor_pago || 0);
+            const comissao = parseFloat(s.valor_comissao_calculada || 0);
+            return `
+              <tr>
+                <td><strong style="font-family: monospace; color: var(--primary); font-size: 12px;">${this.escapeHtml(s.codigo_inscricao)}</strong></td>
+                <td>
+                  <div style="font-weight: 700; color: #0F172A;">${this.escapeHtml(s.nome_completo)}</div>
+                  <small style="color: var(--text-dim);">${s.cpf ? `CPF: ${this.escapeHtml(s.cpf)}` : 'CPF não informado'}</small>
+                </td>
+                <td>
+                  <div>${this.escapeHtml(s.email)}</div>
+                  <small style="color: var(--text-dim);">${this.escapeHtml(s.telefone || '-')}</small>
+                </td>
+                <td>
+                  <div style="font-weight: 600; color: #0284C7;">${this.escapeHtml(s.evento_nome || '-')}</div>
+                  <small style="color: var(--text-dim);">${this.escapeHtml(s.evento_modalidade || '')}</small>
+                </td>
+                <td><span style="font-size: 12px; color: #475569;">${regDate}</span></td>
+                <td>
+                  <strong style="font-size: 12px; color: #0F172A;">
+                    ${valor > 0 ? `R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'Gratuito'}
+                  </strong>
+                </td>
+                <td>
+                  <span style="font-weight: 700; color: #16A34A; font-size: 12px;">
+                    R$ ${comissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                  <small style="display: block; font-size: 10px; color: var(--text-dim);">(${s.comissao_inscricao_pct || 0}%)</small>
+                </td>
+                <td>
+                  <span class="partner-status-tag ativo" style="font-size: 11px;">${this.escapeHtml(s.status_pagamento || 'Confirmada')}</span>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  },
+
+  // Filtrar alunos na carteira
+  filterWalletStudents() {
+    const q = document.getElementById('walletStudentSearchInput')?.value.toLowerCase().trim() || '';
+    if (!this.state.walletStudentsCache) return;
+
+    if (!q) {
+      this.renderWalletStudentsTable(this.state.walletStudentsCache);
+      return;
+    }
+
+    const filtered = this.state.walletStudentsCache.filter(s =>
+      (s.nome_completo && s.nome_completo.toLowerCase().includes(q)) ||
+      (s.cpf && s.cpf.toLowerCase().includes(q)) ||
+      (s.email && s.email.toLowerCase().includes(q)) ||
+      (s.telefone && s.telefone.toLowerCase().includes(q)) ||
+      (s.codigo_inscricao && s.codigo_inscricao.toLowerCase().includes(q)) ||
+      (s.evento_nome && s.evento_nome.toLowerCase().includes(q))
+    );
+
+    this.renderWalletStudentsTable(filtered);
   },
 
   // Visualizar Lista de Inscritos de um Evento
@@ -1445,6 +1653,7 @@ window.app = {
                 <th>Email / Contato</th>
                 <th>Kit / Camiseta</th>
                 <th>Data Inscrição</th>
+                <th>Origem / Carteira</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -1452,6 +1661,10 @@ window.app = {
               ${attendees.map(a => {
                 const dateObj = new Date(a.created_at);
                 const regDate = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const origemBadge = a.parceiro_indicador_nome ?
+                  `<span class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;" title="Inscrição realizada via Carteira do Parceiro"><i class="fa-solid fa-wallet"></i> ${this.escapeHtml(a.parceiro_indicador_nome)}</span>` :
+                  `<span class="badge" style="background: #F1F5F9; color: #64748B; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">Direta</span>`;
+
                 return `
                   <tr>
                     <td><strong style="font-family: monospace; color: var(--primary);">${this.escapeHtml(a.codigo_inscricao)}</strong></td>
@@ -1465,6 +1678,7 @@ window.app = {
                     </td>
                     <td><span class="modality-pill" style="padding: 2px 8px; font-size: 11px;">Tam: ${this.escapeHtml(a.tamanho_camiseta || 'M')}</span></td>
                     <td>${regDate}</td>
+                    <td>${origemBadge}</td>
                     <td><span class="partner-status-tag ativo" style="font-size: 11px;">${a.status_pagamento}</span></td>
                   </tr>
                 `;
@@ -2026,16 +2240,16 @@ window.app = {
     document.getElementById('partnerLogoUrl').value = partner.logo_url || '';
     document.getElementById('partnerWebsite').value = partner.website || '';
 
-    // Configurar seção de Link da LP com o link gerado
+    // Configurar seção de Link da Carteira com o link gerado
     const notice = document.getElementById('partnerLpNewNotice');
     const controls = document.getElementById('partnerLpActiveControls');
     const input = document.getElementById('partnerLpUrlInput');
     const openLink = document.getElementById('partnerLpOpenLink');
-    const lpUrl = this.getPartnerLPUrl(partner.id);
+    const walletUrl = this.getPartnerWalletUrl(partner.id);
     if (notice) notice.style.display = 'none';
     if (controls) controls.style.display = 'block';
-    if (input) input.value = lpUrl;
-    if (openLink) openLink.href = lpUrl;
+    if (input) input.value = walletUrl;
+    if (openLink) openLink.href = walletUrl;
 
     document.getElementById('partnerModalTitle').textContent = `Editar Parceiro: ${partner.nome_fantasia}`;
     this.openModal('partnerModal');
@@ -2077,12 +2291,12 @@ window.app = {
         await this.refreshAll();
 
         if (isNew && savedPartner && savedPartner.id) {
-          const lpUrl = this.getPartnerLPUrl(savedPartner.id);
-          this.showToast(`Parceiro cadastrado com sucesso! Link da LP ativado.`, 'success');
+          const walletUrl = this.getPartnerWalletUrl(savedPartner.id);
+          this.showToast(`Parceiro cadastrado com sucesso! Link da Carteira ativado.`, 'success');
           // Confirmação para copiar o link imediatamente
           setTimeout(() => {
-            if (confirm(`Parceiro cadastrado com sucesso!\n\nDeseja copiar agora o Link da LP para enviar aos alunos e atletas da academia?\n\n${lpUrl}`)) {
-              this.copyPartnerLPLink(savedPartner.id);
+            if (confirm(`Parceiro cadastrado com sucesso!\n\nDeseja copiar agora o Link da Carteira para enviar aos alunos e atletas da academia?\n\n${walletUrl}`)) {
+              this.copyPartnerWalletLink(savedPartner.id);
             }
           }, 300);
         } else {

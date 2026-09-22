@@ -7,9 +7,11 @@ exports.getAllPartners = async (req, res) => {
     let queryText = `
       SELECT 
         p.*,
-        COUNT(e.id)::int AS total_eventos
+        COUNT(DISTINCT e.id)::int AS total_eventos,
+        COUNT(DISTINCT i.id)::int AS total_alunos_carteira
       FROM parceiros p
       LEFT JOIN eventos e ON e.parceiro_id = p.id
+      LEFT JOIN inscricoes_evento i ON i.parceiro_indicador_id = p.id
     `;
     const queryParams = [];
     const conditions = [];
@@ -70,6 +72,67 @@ exports.getPartnerById = async (req, res) => {
   } catch (error) {
     console.error('Erro ao buscar parceiro por ID:', error);
     return res.status(500).json({ success: false, message: 'Erro interno ao buscar parceiro', error: error.message });
+  }
+};
+
+// Obter carteira de alunos e indicações diretas do parceiro
+exports.getPartnerWallet = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const partnerResult = await db.query('SELECT * FROM parceiros WHERE id = $1', [id]);
+    if (partnerResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parceiro não encontrado' });
+    }
+
+    const partner = partnerResult.rows[0];
+
+    // Buscar todos os alunos/atletas que se inscreveram através da Carteira deste parceiro
+    const walletQuery = `
+      SELECT 
+        i.*,
+        e.nome AS evento_nome,
+        e.modalidade AS evento_modalidade,
+        e.data_inicio AS evento_data_inicio,
+        e.local AS evento_local,
+        h.nome AS hotel_nome
+      FROM inscricoes_evento i
+      JOIN eventos e ON e.id = i.evento_id
+      LEFT JOIN hoteis_curadoria h ON i.hospedagem_hotel_id = h.id
+      WHERE i.parceiro_indicador_id = $1
+      ORDER BY i.created_at DESC
+    `;
+
+    const walletResult = await db.query(walletQuery, [id]);
+    const alunos = walletResult.rows;
+
+    const totalAlunos = alunos.length;
+    const totalReceita = alunos.reduce((acc, a) => acc + parseFloat(a.valor_pago || 0), 0);
+    const totalComissao = alunos.reduce((acc, a) => acc + parseFloat(a.comissao_parceiro_inscricao || 0), 0);
+    const distinctEventos = new Set(alunos.map(a => a.evento_id)).size;
+
+    return res.json({
+      success: true,
+      partner,
+      parceiro: partner,
+      summary: {
+        total_alunos: totalAlunos,
+        total_eventos_distintos: distinctEventos,
+        total_receita_gerada: totalReceita.toFixed(2),
+        total_comissao_acumulada: totalComissao.toFixed(2),
+      },
+      resumo: {
+        total_alunos: totalAlunos,
+        total_eventos_distintos: distinctEventos,
+        total_receita_gerada: totalReceita.toFixed(2),
+        total_comissao_acumulada: totalComissao.toFixed(2),
+      },
+      data: alunos,
+      alunos: alunos,
+    });
+  } catch (error) {
+    console.error('Erro ao consultar carteira do parceiro:', error);
+    return res.status(500).json({ success: false, message: 'Erro ao consultar carteira do parceiro', error: error.message });
   }
 };
 

@@ -1010,33 +1010,33 @@
             </div>
           </div>
 
-          <!-- Seção: Link da Landing Page da Academia / Parceiro -->
+          <!-- Seção: Carteira do Parceiro (Link Exclusivo para Alunos e Indicações) -->
           <div class="partner-lp-section" id="partnerLpModalSection" style="margin-top: 14px; padding: 14px; background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-md);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
               <label style="font-weight: 700; color: #0369A1; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
-                <i class="fa-solid fa-link"></i> Link da LP da Academia / Parceiro
+                <i class="fa-solid fa-wallet"></i> Carteira do Parceiro (Link de Inscrição dos Alunos)
               </label>
-              <span class="badge" style="background: #E0F2FE; color: #0284C7; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px;">Página Pública para Atletas</span>
+              <span class="badge" style="background: #E0F2FE; color: #0284C7; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px;">Carteira & Indicações</span>
             </div>
             
             <p style="font-size: 11px; color: #475569; margin-bottom: 8px; line-height: 1.4;">
-              Disponibilize este link exclusivo para que os alunos, atletas e equipes associadas acessem a página personalizada com todos os eventos, inscrições e hotéis com desconto da sua academia.
+              Disponibilize este link da Carteira para sua academia e alunos. Todas as inscrições feitas por este link são monitoradas separadamente e creditadas na carteira deste parceiro para acompanhamento e comissões.
             </p>
 
             <div id="partnerLpNewNotice" style="font-size: 12px; color: #0284C7; font-style: italic; background: #FFFFFF; padding: 10px; border-radius: var(--radius-sm); border: 1px dashed #7DD3FC;">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> O Link da LP exclusivo será gerado e ativado automaticamente assim que você salvar o parceiro.
+              <i class="fa-solid fa-wand-magic-sparkles"></i> O Link da Carteira exclusivo será gerado e ativado automaticamente assim que você salvar o parceiro.
             </div>
 
             <div id="partnerLpActiveControls" style="display: none;">
               <div style="display: flex; gap: 6px; align-items: center;">
                 <input type="text" id="partnerLpUrlInput" readonly style="flex: 1; background: #FFFFFF; font-weight: 600; color: #0369A1; font-size: 12px; padding: 8px 10px;" value="">
-                <button type="button" class="btn btn-primary btn-sm" onclick="app.copyPartnerLPLinkFromModal()" title="Copiar Link da LP">
-                  <i class="fa-solid fa-copy"></i> Copiar
+                <button type="button" class="btn btn-primary btn-sm" onclick="app.copyPartnerWalletLinkFromModal()" title="Copiar Link da Carteira">
+                  <i class="fa-solid fa-copy"></i> Copiar Link
                 </button>
-                <a id="partnerLpOpenLink" href="#" target="_blank" class="btn btn-secondary btn-sm" title="Abrir Landing Page">
+                <a id="partnerLpOpenLink" href="#" target="_blank" class="btn btn-secondary btn-sm" title="Abrir Carteira Pública">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
-                <button type="button" class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A; background: #FFFFFF;" onclick="app.sharePartnerLpWhatsAppFromModal()" title="Compartilhar no WhatsApp">
+                <button type="button" class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A; background: #FFFFFF;" onclick="app.sharePartnerWalletWhatsAppFromModal()" title="Compartilhar no WhatsApp">
                   <i class="fa-brands fa-whatsapp"></i> WhatsApp
                 </button>
               </div>
@@ -1218,6 +1218,110 @@
       </div>
     </div>
   </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CARTEIRA DO PARCEIRO - ALUNOS & INDICAÇÕES           -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="partnerWalletModal">
+    <div class="modal-dialog modal-large" style="max-width: 960px;">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #E0F2FE; color: #0284C7;"><i class="fa-solid fa-wallet"></i></div>
+          <div>
+            <h3 id="walletModalPartnerName">Carteira do Parceiro</h3>
+            <p id="walletModalPartnerMeta">Monitoramento de alunos e indicações de inscrições realizadas via link da Carteira</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('partnerWalletModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Banner de Link da Carteira -->
+        <div style="background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 12px; font-weight: 700; color: #0369A1; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-link"></i> Link Exclusivo da Carteira deste Parceiro
+            </label>
+            <span class="badge" style="background: #E0F2FE; color: #0284C7; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px;">Link Oficial</span>
+          </div>
+          <p style="font-size: 11px; color: #475569; margin-bottom: 10px;">
+            Todas as inscrições realizadas através deste link são atribuídas automaticamente a este parceiro para acompanhamento e cálculo de comissões.
+          </p>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="walletModalLinkInput" readonly style="flex: 1; min-width: 250px; background: #FFFFFF; font-weight: 600; color: #0369A1; font-size: 12px; padding: 8px 12px; border: 1px solid #7DD3FC; border-radius: var(--radius-sm);" value="">
+            <button type="button" class="btn btn-primary btn-sm" onclick="app.copyPartnerWalletLinkFromWalletModal()" title="Copiar Link da Carteira">
+              <i class="fa-solid fa-copy"></i> Copiar Link
+            </button>
+            <a id="walletModalOpenBtn" href="#" target="_blank" class="btn btn-secondary btn-sm" title="Abrir Carteira Pública">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir
+            </a>
+            <button type="button" class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A; background: #FFFFFF;" onclick="app.sharePartnerWalletWhatsAppFromWalletModal()" title="Compartilhar no WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPIs Cards da Carteira -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #EFF6FF; color: #1D4ED8; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div>
+              <div style="font-size: 22px; font-weight: 800; color: #0F172A;" id="walletKpiTotalAlunos">0</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Alunos Indicados</div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #F3E8FF; color: #7C3AED; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div>
+              <div style="font-size: 22px; font-weight: 800; color: #0F172A;" id="walletKpiTotalEventos">0</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Eventos Alcançados</div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #FEF3C7; color: #B45309; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div>
+              <div style="font-size: 20px; font-weight: 800; color: #0F172A;" id="walletKpiTotalReceita">R$ 0,00</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Receita de Inscrições</div>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 14px 16px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #DCFCE7; color: #166534; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+            <div>
+              <div style="font-size: 20px; font-weight: 800; color: #16A34A;" id="walletKpiTotalComissao">R$ 0,00</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Comissão Acumulada</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Alunos e Inscrições da Carteira -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <h4 style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-users"></i> Alunos & Atletas Registrados (<span id="walletStudentsCount">0</span>)
+          </h4>
+          <input type="text" id="walletStudentSearchInput" placeholder="Buscar aluno, CPF, email ou evento..." oninput="app.filterWalletStudents()" style="padding: 7px 12px; font-size: 12px; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); width: 280px;">
+        </div>
+
+        <div class="partner-events-table-wrapper" id="walletStudentsTableWrapper" style="max-height: 400px; overflow-y: auto;">
+          <!-- Tabela preenchida dinamicamente -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir Extrato</button>
+        <button type="button" class="btn btn-primary" onclick="app.closeModal('partnerWalletModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ========================================================== -->
   <!-- MODAL: AJUSTE DE TAXAS DE COMISSÃO E PIX DO PARCEIRO       -->
   <!-- ========================================================== -->

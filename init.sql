@@ -176,6 +176,8 @@ CREATE TABLE IF NOT EXISTS inscricoes_evento (
     status_pagamento VARCHAR(30) DEFAULT 'Confirmado' CHECK (status_pagamento IN ('Pendente', 'Confirmado', 'Cancelado')),
     valor_pago NUMERIC(10,2) DEFAULT 0.00,
     comissao_parceiro_inscricao NUMERIC(10,2) DEFAULT 0.00,
+    parceiro_indicador_id INTEGER REFERENCES parceiros(id) ON DELETE SET NULL,
+    origem_inscricao VARCHAR(50) DEFAULT 'DIRETA',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

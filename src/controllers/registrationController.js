@@ -16,7 +16,9 @@ exports.registerForEvent = async (req, res) => {
       contato_emergencia_telefone,
       precisa_hospedagem,
       hospedagem_hotel_id,
-      hospedagem_qtd_pessoas
+      hospedagem_qtd_pessoas,
+      parceiro_indicador_id,
+      origem_inscricao
     } = req.body;
 
     if (!nome_completo || !email || !telefone) {
@@ -66,15 +68,20 @@ exports.registerForEvent = async (req, res) => {
     const comissaoInscricaoPct = parseFloat(eventData.comissao_inscricao_pct || 10.00);
     const comissaoParceiroInscricao = (valorInscricao * (comissaoInscricaoPct / 100.00)).toFixed(2);
 
+    // Identificar origem da indicação (Carteira do Parceiro ou Inscrição Direta)
+    const finalParceiroIndicadorId = parceiro_indicador_id ? parseInt(parceiro_indicador_id, 10) : null;
+    const finalOrigemInscricao = finalParceiroIndicadorId ? (origem_inscricao || 'CARTEIRA_PARCEIRO') : 'DIRETA';
+
     // 3. Inserir inscrição no banco
     const queryText = `
       INSERT INTO inscricoes_evento (
         evento_id, codigo_inscricao, nome_completo, cpf, email, telefone,
         data_nascimento, genero, tamanho_camiseta, contato_emergencia_nome,
         contato_emergencia_telefone, precisa_hospedagem, hospedagem_hotel_id,
-        hospedagem_qtd_pessoas, status_pagamento, valor_pago, comissao_parceiro_inscricao
+        hospedagem_qtd_pessoas, status_pagamento, valor_pago, comissao_parceiro_inscricao,
+        parceiro_indicador_id, origem_inscricao
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
       RETURNING *
     `;
 
@@ -95,7 +102,9 @@ exports.registerForEvent = async (req, res) => {
       hospedagem_qtd_pessoas || 1,
       'Confirmado',
       valorInscricao,
-      comissaoParceiroInscricao
+      comissaoParceiroInscricao,
+      finalParceiroIndicadorId,
+      finalOrigemInscricao
     ];
 
     const result = await db.query(queryText, values);
@@ -189,9 +198,10 @@ exports.getEventRegistrations = async (req, res) => {
     }
 
     const regResult = await db.query(
-      `SELECT i.*, h.nome AS hotel_nome 
+      `SELECT i.*, h.nome AS hotel_nome, p.nome_fantasia AS parceiro_indicador_nome 
        FROM inscricoes_evento i 
        LEFT JOIN hoteis_curadoria h ON i.hospedagem_hotel_id = h.id 
+       LEFT JOIN parceiros p ON i.parceiro_indicador_id = p.id
        WHERE i.evento_id = $1 
        ORDER BY i.created_at DESC`,
       [evento_id]
