@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNYCO Esporte | Gestão de Eventos, Parceiros e Propostas</title>
+  <meta name="description" content="Plataforma completa para gestão de eventos esportivos, parcerias comerciais, propostas e inscrições de atletas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="./css/style.css?v=20260922_11">
+</head>
+<body>
+  <!-- Toast Container para Notificações -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========================================================== -->
+  <!-- TELA DE LOGIN / AUTENTICAÇÃO DO SISTEMA -->
+  <!-- ========================================================== -->
+  <div id="loginScreen" class="login-screen-wrapper">
+    <div class="login-background-glow">
+      <div class="glow-shape shape-1"></div>
+      <div class="glow-shape shape-2"></div>
+      <div class="glow-shape shape-3"></div>
+    </div>
+
+    <div class="login-card-container">
+      <!-- Lado Esquerdo / Header Institucional -->
+      <div class="login-header-section">
+        <div class="login-brand">
+          <div class="login-brand-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="login-brand-titles">
+            <span class="login-brand-main">UNYCO</span>
+            <span class="login-brand-sub">ESPORTE & EXPERIÊNCIA</span>
+          </div>
+        </div>
+        <h2 class="login-headline">Acesso à Plataforma de Gestão de Eventos Esportivos</h2>
+        <p class="login-subheadline">Gerencie parcerias, calendário esportivo, curadoria de hotéis, inscrições e propostas comerciais em um único ambiente integrado.</p>
+        
+        <!-- Destaques / Benefícios Visuais -->
+        <div class="login-feature-list">
+          <div class="login-feature-item">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Plataforma White-label para Clubes, Federações e Arenas</span>
+          </div>
+          <div class="login-feature-item">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Curadoria de Hotéis com Tarifas Exclusivas para Atletas</span>
+          </div>
+          <div class="login-feature-item">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Painel Financeiro de Repasses & Comissões via PIX</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lado Direito / Formulário & Acesso Rápido -->
+      <div class="login-form-section">
+        <div class="login-form-box">
+          <div class="login-form-header">
+            <h3>Identificação de Operador</h3>
+            <p>Entre com suas credenciais ou escolha um perfil de acesso rápido para testar o sistema.</p>
+          </div>
+
+          <form id="loginForm" onsubmit="app.handleLogin(event)" class="login-form">
+            <div class="form-group">
+              <label for="loginEmail"><i class="fa-solid fa-envelope"></i> Email Corporativo</label>
+              <input type="email" id="loginEmail" class="form-control login-input" placeholder="ex: admin@unyco.com.br" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <div class="label-with-link">
+                <label for="loginPassword"><i class="fa-solid fa-lock"></i> Senha de Acesso</label>
+              </div>
+              <div class="password-input-wrapper">
+                <input type="password" id="loginPassword" class="form-control login-input" placeholder="Digite sua senha" required autocomplete="current-password" value="123456">
+                <button type="button" class="btn-toggle-password" onclick="app.togglePasswordVisibility('loginPassword', this)" title="Exibir/Ocultar Senha">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="login-form-options">
+              <label class="remember-me-checkbox">
+                <input type="checkbox" id="loginRemember" checked>
+                <span>Lembrar meu acesso neste dispositivo</span>
+              </label>
+            </div>
+
+            <button type="submit" id="btnLoginSubmit" class="btn btn-primary btn-login-submit">
+              <span>Acessar o Sistema</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </form>
+
+          <div class="login-divider">
+            <span>OU ACESSE EM 1-CLIQUE COM UM PERFIL DEMO</span>
+          </div>
+
+          <!-- Fast Demo Login Cards -->
+          <div class="quick-demo-roles">
+            <!-- 1. Administrador -->
+            <button type="button" class="quick-role-card role-card-adm" onclick="app.quickLoginAs('admin@unyco.com.br', '123456')">
+              <div class="role-card-avatar">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120" alt="ADM">
+                <span class="role-badge-icon"><i class="fa-solid fa-crown"></i></span>
+              </div>
+              <div class="role-card-info">
+                <div class="role-card-top">
+                  <strong>Carlos Mendes</strong>
+                  <span class="user-role-badge badge-adm">ADM GERAL</span>
+                </div>
+                <small>Acesso total irrestrito & aprovação de propostas</small>
+              </div>
+              <div class="role-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </button>
+
+            <!-- 2. Representante Comercial -->
+            <button type="button" class="quick-role-card role-card-rep" onclick="app.quickLoginAs('representante@unyco.com.br', '123456')">
+              <div class="role-card-avatar">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120" alt="Representante">
+                <span class="role-badge-icon" style="background: #1D4ED8;"><i class="fa-solid fa-handshake"></i></span>
+              </div>
+              <div class="role-card-info">
+                <div class="role-card-top">
+                  <strong>Renato Oliveira</strong>
+                  <span class="user-role-badge badge-rep">REPRESENTANTE</span>
+                </div>
+                <small>Cadastra parceiros, eventos e categorias</small>
+              </div>
+              <div class="role-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </button>
+
+            <!-- 3. Consultor de Viagens -->
+            <button type="button" class="quick-role-card role-card-consultor" onclick="app.quickLoginAs('consultor@unyco.com.br', '123456')">
+              <div class="role-card-avatar">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120" alt="Consultor">
+                <span class="role-badge-icon" style="background: #047857;"><i class="fa-solid fa-hotel"></i></span>
+              </div>
+              <div class="role-card-info">
+                <div class="role-card-top">
+                  <strong>Camila Torres</strong>
+                  <span class="user-role-badge badge-consultor">CONSULTORA</span>
+                </div>
+                <small>Curadoria de hotéis, propostas e reservas</small>
+              </div>
+              <div class="role-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-layout" id="appLayout" style="display: none;">
+    <!-- Sidebar / Navegação Lateral -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+          <div class="brand-text">
+            <span class="brand-title">UNYCO</span>
+            <span class="brand-subtitle">ESPORTE & EVENTOS</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard" id="navDashboard">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="partners" id="navPartners">
+          <i class="fa-solid fa-handshake"></i>
+          <span>Parceiros</span>
+          <span class="badge" id="badgePartnersCount">0</span>
+        </button>
+        <button class="nav-item" data-tab="events" id="navEvents">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Eventos Esportivos</span>
+          <span class="badge" id="badgeEventsCount">0</span>
+        </button>
+        <button class="nav-item" data-tab="proposals" id="navProposals">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>Propostas de Parceria</span>
+          <span class="badge" id="badgeProposalsCount">0</span>
+        </button>
+        <button class="nav-item" data-tab="categories" id="navCategories">
+          <i class="fa-solid fa-tags"></i>
+          <span>Categorias de Evento</span>
+          <span class="badge" id="badgeCategoriesCount">0</span>
+        </button>
+        <button class="nav-item" data-tab="earnings" id="navEarnings">
+          <i class="fa-solid fa-coins"></i>
+          <span>Ganhos & Hotelaria</span>
+          <span class="badge" id="badgeEarningsCount" style="background: #DCFCE7; color: #166534;">R$ 0</span>
+        </button>
+        <button class="nav-item" data-tab="settings" id="navSettings" title="Configurações e Gestão de Usuários">
+          <i class="fa-solid fa-gear"></i>
+          <span>Configurações</span>
+          <span class="badge badge-adm" id="badgeUsersCount" style="font-size: 10px; padding: 2px 6px;">4</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="server-status-pill" id="serverStatusPill">
+          <span class="status-dot online"></span>
+          <span class="status-text">Docker & PostgreSQL Conectados</span>
+        </div>
+        <div class="user-meta">
+          <small>Ambiente Local v1.0 • Porta 3060</small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1 id="pageTitle">Painel Geral</h1>
+          <p id="pageDescription">Visão consolidada de parceiros, eventos, propostas e inscrições</p>
+        </div>
+        <div class="topbar-actions">
+          <!-- Widget de Perfil & Permissões RBAC -->
+          <div class="user-profile-widget" id="userProfileWidget">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" id="currentUserAvatar" class="user-avatar-img" alt="Avatar">
+            <div class="user-profile-info">
+              <span class="user-name" id="currentUserName">Carlos Mendes</span>
+              <span class="user-role-badge badge-adm" id="currentUserRoleBadge"><i class="fa-solid fa-crown"></i> Administrador</span>
+            </div>
+            <select id="selectSwitchProfile" class="profile-select-control" onchange="app.switchActiveProfile(this.value)" title="Alternar Perfil para Teste de Permissões">
+              <option value="ADMIN">👑 Perfil: Administrador (ADM)</option>
+              <option value="REPRESENTANTE">🤝 Perfil: Representante Comercial</option>
+              <option value="CONSULTOR">🏨 Perfil: Consultor de Viagens</option>
+              <option value="PARCEIRO">🏅 Perfil: Parceiro / Organizador</option>
+            </select>
+            <button class="btn btn-sm btn-outline btn-logout" id="btnLogout" onclick="app.logout()" title="Encerrar Sessão">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Sair</span>
+            </button>
+          </div>
+
+          <button class="btn btn-secondary btn-sm" id="btnRefreshData" title="Recarregar Dados">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Atualizar</span>
+          </button>
+          <button class="btn btn-outline btn-sm action-btn-user" id="btnOpenUserCreateTopbar" onclick="app.openCreateUserModal()" style="border-color: #FBCFE8; color: #BE185D; background: #FDF2F8;" title="Novo Usuário / Operador">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Novo Usuário</span>
+          </button>
+          <button class="btn btn-outline btn-sm action-btn-proposal" id="btnOpenProposalModal">
+            <i class="fa-solid fa-file-circle-plus"></i>
+            <span>Nova Proposta</span>
+          </button>
+          <button class="btn btn-outline btn-sm action-btn-partner" id="btnOpenPartnerModal">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Novo Parceiro</span>
+          </button>
+          <button class="btn btn-primary btn-sm action-btn-event" id="btnOpenEventModal">
+            <i class="fa-solid fa-plus"></i>
+            <span>Novo Evento</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- SEÇÃO 1: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-content active">
+        <!-- Grid de Métricas Principais (KPIs) -->
+        <div class="stats-grid">
+          <div class="stat-card stat-cyan">
+            <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total de Parceiros</span>
+              <h2 class="stat-value" id="kpiTotalPartners">0</h2>
+              <span class="stat-meta" id="kpiActivePartners">0 parceiros ativos</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-emerald">
+            <div class="stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Eventos Agendados</span>
+              <h2 class="stat-value" id="kpiScheduledEvents">0</h2>
+              <span class="stat-meta" id="kpiOngoingEvents">0 em andamento</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-amber">
+            <div class="stat-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Propostas em Negociação</span>
+              <h2 class="stat-value" id="kpiTotalProposals">0</h2>
+              <span class="stat-meta" id="kpiProposalsVolume">R$ 0,00 em pipeline</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fa-solid fa-person-running"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Capacidade de Atletas</span>
+              <h2 class="stat-value" id="kpiTotalCapacity">0</h2>
+              <span class="stat-meta">Vagas em todos os eventos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Linha Dupla: Próximos Eventos + Top Parceiros & Modalidades -->
+        <div class="dashboard-columns">
+          <div class="dashboard-card upcoming-events-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <h3>Próximos Eventos no Calendário</h3>
+              </div>
+              <button class="btn-link" onclick="app.switchTab('events')">Ver todos <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <div class="upcoming-list" id="upcomingEventsList">
+              <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando eventos...</div>
+            </div>
+          </div>
+
+          <div class="dashboard-side-col">
+            <!-- Modalidades em Destaque -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <i class="fa-solid fa-medal"></i>
+                  <h3>Modalidades</h3>
+                </div>
+              </div>
+              <div class="modalities-tag-cloud" id="modalitiesTagCloud">
+                <!-- Inserido dinamicamente via JS -->
+              </div>
+            </div>
+
+            <!-- Parceiros com mais Eventos -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <i class="fa-solid fa-star"></i>
+                  <h3>Parceiros em Destaque</h3>
+                </div>
+                <button class="btn-link" onclick="app.switchTab('partners')">Gerenciar <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+              <div class="top-partners-list" id="topPartnersList">
+                <!-- Inserido dinamicamente via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 2: PARCEIROS -->
+      <section id="tab-partners" class="tab-content">
+        <div class="filter-toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="partnerSearchInput" placeholder="Buscar parceiro por nome, CNPJ ou email...">
+          </div>
+          <div class="toolbar-controls">
+            <select id="partnerStatusFilter" class="custom-select">
+              <option value="">Todos os Status</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+            <button class="btn btn-primary" onclick="app.openCreatePartnerModal()">
+              <i class="fa-solid fa-plus"></i> Novo Parceiro
+            </button>
+          </div>
+        </div>
+
+        <div class="partners-grid" id="partnersContainer">
+          <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando parceiros...</div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 3: EVENTOS -->
+      <section id="tab-events" class="tab-content">
+        <div class="filter-toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="eventSearchInput" placeholder="Buscar por título do evento, local, categoria ou parceiro...">
+          </div>
+          <div class="toolbar-controls">
+            <select id="eventCategoryFilter" class="custom-select">
+              <option value="">Todas as Categorias</option>
+            </select>
+            <select id="eventPartnerFilter" class="custom-select">
+              <option value="">Todos os Parceiros</option>
+            </select>
+            <select id="eventStatusFilter" class="custom-select">
+              <option value="">Todos os Status</option>
+              <option value="Agendado">Agendados</option>
+              <option value="Em Andamento">Em Andamento</option>
+              <option value="Concluído">Concluídos</option>
+              <option value="Cancelado">Cancelados</option>
+            </select>
+            <button class="btn btn-primary" onclick="app.openCreateEventModal()">
+              <i class="fa-solid fa-plus"></i> Novo Evento
+            </button>
+          </div>
+        </div>
+
+        <div class="events-grid" id="eventsContainer">
+          <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando eventos...</div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 4: PROPOSTAS DE PARCERIA -->
+      <section id="tab-proposals" class="tab-content">
+        <div class="filter-toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="proposalSearchInput" placeholder="Buscar proposta por título, parceiro ou tipo...">
+          </div>
+          <div class="toolbar-controls">
+            <select id="proposalStatusFilter" class="custom-select">
+              <option value="">Todos os Status</option>
+              <option value="Rascunho">Rascunho</option>
+              <option value="Enviada">Enviada</option>
+              <option value="Em Negociação">Em Negociação</option>
+              <option value="Aprovada">Aprovada</option>
+              <option value="Recusada">Recusada</option>
+            </select>
+            <button class="btn btn-primary" onclick="app.openCreateProposalModal()">
+              <i class="fa-solid fa-plus"></i> Nova Proposta
+            </button>
+          </div>
+        </div>
+
+        <div class="proposals-grid" id="proposalsContainer">
+          <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando propostas...</div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 5: CATEGORIAS DE EVENTO -->
+      <section id="tab-categories" class="tab-content">
+        <div class="filter-toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="categorySearchInput" placeholder="Buscar categoria de evento...">
+          </div>
+          <div class="toolbar-controls">
+            <button class="btn btn-primary" onclick="app.openCreateCategoryModal()">
+              <i class="fa-solid fa-plus"></i> Nova Categoria
+            </button>
+          </div>
+        </div>
+
+        <div class="categories-grid" id="categoriesContainer">
+          <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando categorias...</div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 6: GANHOS DO PARCEIRO & CURADORIA DE HOTÉIS -->
+      <section id="tab-earnings" class="tab-content">
+        <!-- 4 KPIs Financeiros -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card stat-emerald">
+            <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Repasse Acumulado aos Parceiros</span>
+              <h2 class="stat-value" id="kpiTotalPayouts">R$ 0,00</h2>
+              <span class="stat-meta">Inscrições + Hotelaria Confirmada</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-cyan">
+            <div class="stat-icon"><i class="fa-solid fa-hotel"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Receita em Hotelaria UNYCO</span>
+              <h2 class="stat-value" id="kpiHotelGross">R$ 0,00</h2>
+              <span class="stat-meta" id="kpiHotelLeadsCount">0 reservas geradas por atletas</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><i class="fa-solid fa-ticket"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Receita em Inscrições</span>
+              <h2 class="stat-value" id="kpiInscriptionsGross">R$ 0,00</h2>
+              <span class="stat-meta">Vendas de ingressos e kits</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-amber">
+            <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Comissões em Análise</span>
+              <h2 class="stat-value" id="kpiHotelPending">R$ 0,00</h2>
+              <span class="stat-meta">Reservas pendentes de confirmação</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-navegação interna (Pills) -->
+        <div class="sub-tabs-nav">
+          <button class="sub-tab-btn active" id="btnSubtabPartners" onclick="app.switchEarningsSubtab('partners')">
+            <i class="fa-solid fa-handshake"></i> Extrato de Repasse por Parceiro
+          </button>
+          <button class="sub-tab-btn" id="btnSubtabHotels" onclick="app.switchEarningsSubtab('hotels')">
+            <i class="fa-solid fa-hotel"></i> Curadoria de Hotéis UNYCO
+          </button>
+          <button class="sub-tab-btn" id="btnSubtabLeads" onclick="app.switchEarningsSubtab('leads')">
+            <i class="fa-solid fa-users-rectangle"></i> Leads & Reservas de Hospedagem
+          </button>
+        </div>
+
+        <!-- Sub-aba 1: Extrato de Repasse por Parceiro -->
+        <div id="subtab-view-partners" class="earnings-subtab-view active">
+          <div class="filter-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="earningsPartnerSearch" placeholder="Buscar parceiro por nome ou chave PIX...">
+            </div>
+            <div class="toolbar-controls">
+              <button class="btn btn-secondary" onclick="app.loadEarningsData()">
+                <i class="fa-solid fa-arrows-rotate"></i> Atualizar Extrato
+              </button>
+            </div>
+          </div>
+
+          <div class="partner-events-table-wrapper" style="background: #FFFFFF; border-radius: var(--radius-xl); border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--shadow-sm);">
+            <table class="data-table" id="earningsTable">
+              <thead>
+                <tr>
+                  <th>Parceiro</th>
+                  <th>Taxa Inscrições</th>
+                  <th>Taxa Hotelaria</th>
+                  <th>Ganhos Inscrições</th>
+                  <th>Ganhos Hotelaria</th>
+                  <th>Total a Receber</th>
+                  <th>Chave PIX / Repasse</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="earningsTableBody">
+                <tr><td colspan="8" class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando extrato de ganhos...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sub-aba 2: Curadoria de Hotéis UNYCO -->
+        <div id="subtab-view-hotels" class="earnings-subtab-view" style="display: none;">
+          <div class="filter-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="hotelSearchInput" placeholder="Buscar hotel por nome, cidade ou endereço...">
+            </div>
+            <div class="toolbar-controls">
+              <select id="hotelCityFilter" class="custom-select" onchange="app.filterHotels()">
+                <option value="">Todas as Cidades</option>
+              </select>
+              <button class="btn btn-primary" onclick="app.openCreateHotelModal()">
+                <i class="fa-solid fa-plus"></i> Novo Hotel na Curadoria
+              </button>
+            </div>
+          </div>
+
+          <div class="hotels-grid" id="hotelsGridContainer">
+            <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando curadoria de hotéis...</div>
+          </div>
+        </div>
+
+        <!-- Sub-aba 3: Leads & Reservas de Hospedagem -->
+        <div id="subtab-view-leads" class="earnings-subtab-view" style="display: none;">
+          <div class="filter-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="hotelLeadsSearchInput" placeholder="Buscar por nome do hóspede, evento ou hotel...">
+            </div>
+            <div class="toolbar-controls">
+              <select id="hotelLeadStatusFilter" class="custom-select" onchange="app.filterHotelLeads()">
+                <option value="">Todos os Status</option>
+                <option value="Pendente">Pendentes</option>
+                <option value="Confirmada">Confirmadas</option>
+                <option value="Cancelada">Canceladas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="partner-events-table-wrapper" style="background: #FFFFFF; border-radius: var(--radius-xl); border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--shadow-sm);">
+            <table class="data-table" id="hotelLeadsTable">
+              <thead>
+                <tr>
+                  <th>Hóspede / Contato</th>
+                  <th>Tipo / Grupo</th>
+                  <th>Evento Vinculado</th>
+                  <th>Hotel Escolhido</th>
+                  <th>Check-in / Out</th>
+                  <th>Valor Reserva</th>
+                  <th>Comissão Parceiro</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="hotelLeadsTableBody">
+                <tr><td colspan="9" class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando leads de hospedagem...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 7: CONFIGURAÇÕES & GESTÃO DE USUÁRIOS (RBAC) -->
+      <section id="tab-settings" class="tab-content">
+        <!-- Matriz Rápida de Perfis e Permissões (4 Níveis) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%); border: 1px solid #FECDD3; padding: 18px; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <strong style="color: #BE185D; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-crown" style="color: #E11D48;"></i> Administrador Geral
+              </strong>
+              <span class="badge badge-adm">ADM</span>
+            </div>
+            <p style="font-size: 12px; color: #4C0519; line-height: 1.5; margin: 0;">
+              Acesso total e irrestrito. Único que <strong>aprova propostas comerciais</strong>, gerencia outros operadores, redefine senhas e parametriza comissões.
+            </p>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1px solid #BFDBFE; padding: 18px; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <strong style="color: #1D4ED8; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-handshake" style="color: #2563EB;"></i> Representante Comercial
+              </strong>
+              <span class="badge badge-rep">REP</span>
+            </div>
+            <p style="font-size: 12px; color: #1E3A8A; line-height: 1.5; margin: 0;">
+              Cadastra e edita Parceiros, Eventos Esportivos, Categorias e gerencia inscrições. <em>Não aprova propostas nem altera comissões financeiras.</em>
+            </p>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border: 1px solid #BBF7D0; padding: 18px; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <strong style="color: #15803D; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-hotel" style="color: #16A34A;"></i> Consultor de Viagens
+              </strong>
+              <span class="badge badge-consultor">CONSULTOR</span>
+            </div>
+            <p style="font-size: 12px; color: #14532D; line-height: 1.5; margin: 0;">
+              Cadastra e edita Hotéis da Curadoria, elabora Cotações de Hospedagem para atletas e parceiros, e cria propostas de parceria.
+            </p>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1px solid #FDE68A; padding: 18px; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <strong style="color: #B45309; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-handshake-simple" style="color: #D97706;"></i> Parceiro / Organizador
+              </strong>
+              <span class="badge badge-parceiro">PARCEIRO</span>
+            </div>
+            <p style="font-size: 12px; color: #78350F; line-height: 1.5; margin: 0;">
+              Acesso exclusivo e focado aos seus próprios eventos esportivos vinculados, extrato financeiro de repasses e lista de atletas inscritos.
+            </p>
+          </div>
+        </div>
+
+        <!-- Barra de Ferramentas, Busca e Ações -->
+        <div class="content-toolbar" style="margin-bottom: 18px;">
+          <div class="toolbar-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="userSearchInput" placeholder="Buscar usuário por nome, email ou cargo..." oninput="app.renderUsers()">
+          </div>
+          <div class="toolbar-filters">
+            <select id="userRoleFilter" class="filter-select" onchange="app.renderUsers()">
+              <option value="">Todos os Perfis</option>
+              <option value="ADMIN">👑 Administradores</option>
+              <option value="REPRESENTANTE">🤝 Representantes</option>
+              <option value="CONSULTOR">🏨 Consultores</option>
+              <option value="PARCEIRO">🏅 Parceiros</option>
+            </select>
+            <select id="userStatusFilter" class="filter-select" onchange="app.renderUsers()">
+              <option value="">Todos os Status</option>
+              <option value="ativo">Ativos</option>
+              <option value="inativo">Inativos</option>
+            </select>
+            <button class="btn btn-primary" id="btnOpenCreateUserModal" onclick="app.openCreateUserModal()">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Novo Usuário</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabela Completa de Operadores -->
+        <div class="partner-events-table-wrapper" style="background: #FFFFFF; border-radius: var(--radius-xl); border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--shadow-sm);">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Operador</th>
+                <th>Email Corporativo / Login</th>
+                <th>Perfil de Acesso & Permissões</th>
+                <th>Cargo / Função</th>
+                <th>Status</th>
+                <th style="text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabUsersTableBody">
+              <tr><td colspan="6" class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando lista de operadores...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRO / EDIÇÃO DE PROPOSTA DE PARCERIA          -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="proposalModal">
+    <div class="modal-dialog modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge icon-proposal"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <div>
+            <h3 id="proposalModalTitle">Nova Proposta de Parceria</h3>
+            <p>Elabore uma proposta comercial para clubes, federações ou patrocinadores.</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('proposalModal')">&times;</button>
+      </div>
+      <form id="proposalForm" onsubmit="app.handleSaveProposal(event)">
+        <input type="hidden" id="proposalFormId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="proposalParceiroId">Parceiro Alvo da Proposta *</label>
+              <select id="proposalParceiroId" required>
+                <option value="">Selecione o parceiro...</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="proposalTipo">Tipo de Proposta</label>
+              <select id="proposalTipo">
+                <option value="Patrocínio Master">Patrocínio Master</option>
+                <option value="Co-organização">Co-organização</option>
+                <option value="Apoio Institucional">Apoio Institucional</option>
+                <option value="Fornecimento Oficial">Fornecimento Oficial</option>
+                <option value="Permuta / Espaço">Permuta / Espaço</option>
+                <option value="Divulgação B2B">Divulgação B2B</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="proposalTitulo">Título da Proposta Comercial *</label>
+              <input type="text" id="proposalTitulo" required placeholder="Ex: Patrocínio Oficial Circuito Noturno 2026">
+            </div>
+            <div class="form-group flex-1">
+              <label for="proposalStatus">Status da Proposta</label>
+              <select id="proposalStatus">
+                <option value="Rascunho">Rascunho</option>
+                <option value="Enviada">Enviada</option>
+                <option value="Em Negociação">Em Negociação</option>
+                <option value="Aprovada">Aprovada</option>
+                <option value="Recusada">Recusada</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="proposalValor">Valor Proposto (R$)</label>
+              <input type="number" step="0.01" min="0" id="proposalValor" placeholder="Ex: 50000.00">
+            </div>
+            <div class="form-group flex-1">
+              <label for="proposalComissao">Comissão Operacional (%)</label>
+              <input type="number" step="0.1" min="0" max="100" id="proposalComissao" placeholder="Ex: 10.0">
+            </div>
+            <div class="form-group flex-1">
+              <label for="proposalDataValidade">Validade da Proposta</label>
+              <input type="date" id="proposalDataValidade">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="proposalContrapartidas">Contrapartidas & Entregas da Parceria</label>
+            <textarea id="proposalContrapartidas" rows="3" placeholder="Descreva os direitos de marca, espaços de ativação, estandes, ingressos cortesias e benefícios acordados..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="proposalObservacoes">Observações Internas / Negociação</label>
+            <textarea id="proposalObservacoes" rows="2" placeholder="Histórico de conversas, condições especiais de pagamento e notas internas do operador..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('proposalModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveProposal">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Proposta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: VISUALIZAÇÃO DE FICHA DA PROPOSTA                 -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="proposalViewModal">
+    <div class="modal-dialog modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge icon-proposal"><i class="fa-solid fa-file-contract"></i></div>
+          <div>
+            <h3 id="propViewTitle">Ficha da Proposta Comercial</h3>
+            <p id="propViewPartnerName">Parceiro</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('proposalViewModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="proposalViewBody">
+        <!-- Preenchido via JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir Proposta</button>
+        <button type="button" class="btn btn-primary" onclick="app.closeModal('proposalViewModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: LISTAGEM DE INSCRITOS DO EVENTO                   -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="eventRegistrationsModal">
+    <div class="modal-dialog modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge icon-event"><i class="fa-solid fa-users"></i></div>
+          <div>
+            <h3 id="regModalEventTitle">Inscritos no Evento</h3>
+            <p id="regModalEventMeta">Base de atletas e participantes registrados via Landing Page</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('eventRegistrationsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="partner-info-banner" id="regModalStatsBanner" style="margin-bottom: 20px;">
+          <!-- Estatísticas rápidas de inscritos -->
+        </div>
+
+        <div class="section-sub-header">
+          <h4><i class="fa-solid fa-list-check"></i> Lista de Participantes (<span id="regModalTotalCount">0</span>)</h4>
+          <button class="btn btn-sm btn-outline" id="btnCopyLPLinkFromModal">
+            <i class="fa-solid fa-link"></i> Copiar Link da LP de Inscrição
+          </button>
+        </div>
+
+        <div class="partner-events-table-wrapper" id="registrationsTableWrapper">
+          <!-- Tabela de participantes -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('eventRegistrationsModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRO / EDIÇÃO DE CATEGORIA                     -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="categoryModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge icon-category"><i class="fa-solid fa-tag"></i></div>
+          <div>
+            <h3 id="categoryModalTitle">Criar Nova Categoria de Evento</h3>
+            <p>Categorize eventos (ex: Torneio Corporativo, Campeonato Oficial, Circuito, etc.)</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('categoryModal')">&times;</button>
+      </div>
+      <form id="categoryForm" onsubmit="app.handleSaveCategory(event)">
+        <input type="hidden" id="categoryFormId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="categoryNome">Nome da Categoria *</label>
+            <input type="text" id="categoryNome" required placeholder="Ex: Torneio Corporativo ou Campeonato Regional">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="categoryIcone">Ícone Visual</label>
+              <select id="categoryIcone">
+                <option value="fa-trophy">🏆 Troféu (Competição / Campeonato)</option>
+                <option value="fa-briefcase">💼 Maleta (Corporativo / Empresas)</option>
+                <option value="fa-person-running">🏃 Corredor (Circuito / Prova)</option>
+                <option value="fa-medal">🥇 Medalha (Torneio / Destaque)</option>
+                <option value="fa-sun">☀️ Sol (Festival / Lazer)</option>
+                <option value="fa-graduation-cap">🎓 Capelo (Clínica / Workshop)</option>
+                <option value="fa-fire">🔥 Fogo (Desafio / Intenso)</option>
+                <option value="fa-star">⭐ Estrela (Especial / Gala)</option>
+                <option value="fa-bolt">⚡ Raio (Sprint / Rápido)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="categoryCor">Cor Temática</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="color" id="categoryCor" value="#0284C7" style="height: 42px; width: 60px; padding: 2px; cursor: pointer;">
+                <select id="categoryColorPresets" onchange="document.getElementById('categoryCor').value = this.value">
+                  <option value="#0284C7">Azul Oceano (#0284C7)</option>
+                  <option value="#7C3AED">Roxo Imperial (#7C3AED)</option>
+                  <option value="#10B981">Verde Esmeralda (#10B981)</option>
+                  <option value="#F59E0B">Âmbar Dourado (#F59E0B)</option>
+                  <option value="#EC4899">Rosa / Pink (#EC4899)</option>
+                  <option value="#EF4444">Vermelho Rubi (#EF4444)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="categoryDescricao">Descrição da Categoria</label>
+            <textarea id="categoryDescricao" rows="3" placeholder="Explique o objetivo ou público-alvo desta categoria de evento..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('categoryModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveCategory">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Categoria
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRO / EDIÇÃO DE PARCEIRO                      -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="partnerModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge"><i class="fa-solid fa-handshake"></i></div>
+          <div>
+            <h3 id="partnerModalTitle">Cadastrar Novo Parceiro</h3>
+            <p>Preencha as informações cadastrais do parceiro realizador de eventos.</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('partnerModal')">&times;</button>
+      </div>
+      <form id="partnerForm" onsubmit="app.handleSavePartner(event)">
+        <input type="hidden" id="partnerFormId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="partnerNomeFantasia">Nome Fantasia *</label>
+              <input type="text" id="partnerNomeFantasia" required placeholder="Ex: Arena Pro Esportes">
+            </div>
+            <div class="form-group flex-1">
+              <label for="partnerCategoria">Categoria</label>
+              <select id="partnerCategoria">
+                <option value="Clube / Arena">Clube / Arena</option>
+                <option value="Federação Esportiva">Federação Esportiva</option>
+                <option value="Assessoria Esportiva">Assessoria Esportiva</option>
+                <option value="Liga Esportiva">Liga Esportiva</option>
+                <option value="Patrocinador">Patrocinador</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="partnerRazaoSocial">Razão Social</label>
+              <input type="text" id="partnerRazaoSocial" placeholder="Ex: Arena Pro Esportes e Lazer LTDA">
+            </div>
+            <div class="form-group flex-1">
+              <label for="partnerCnpj">CNPJ</label>
+              <input type="text" id="partnerCnpj" placeholder="00.000.000/0000-00">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="partnerEmail">Email de Contato</label>
+              <input type="email" id="partnerEmail" placeholder="contato@parceiro.com.br">
+            </div>
+            <div class="form-group flex-1">
+              <label for="partnerTelefone">Telefone / WhatsApp</label>
+              <input type="text" id="partnerTelefone" placeholder="(11) 99999-9999">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="partnerResponsavel">Nome do Responsável</label>
+              <input type="text" id="partnerResponsavel" placeholder="Ex: Roberto Carlos">
+            </div>
+            <div class="form-group flex-1">
+              <label for="partnerStatus">Status</label>
+              <select id="partnerStatus">
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="partnerLogoUrl">URL do Logo (Imagem)</label>
+              <input type="url" id="partnerLogoUrl" placeholder="https://exemplo.com/logo.jpg">
+            </div>
+            <div class="form-group flex-1">
+              <label for="partnerWebsite">Website / Instagram</label>
+              <input type="url" id="partnerWebsite" placeholder="https://parceiro.com.br">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('partnerModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSavePartner">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Parceiro
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRO / EDIÇÃO DE EVENTO                        -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="eventModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge icon-event"><i class="fa-solid fa-calendar-plus"></i></div>
+          <div>
+            <h3 id="eventModalTitle">Cadastrar Novo Evento</h3>
+            <p>Vincule o evento a um parceiro realizador e defina categoria, data, local e modalidade.</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('eventModal')">&times;</button>
+      </div>
+      <form id="eventForm" onsubmit="app.handleSaveEvent(event)">
+        <input type="hidden" id="eventFormId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="eventParceiroId">Parceiro Realizador *</label>
+              <select id="eventParceiroId" required>
+                <option value="">Selecione o parceiro realizador...</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="eventStatus">Status do Evento</label>
+              <select id="eventStatus">
+                <option value="Agendado">Agendado</option>
+                <option value="Em Andamento">Em Andamento</option>
+                <option value="Concluído">Concluído</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="eventNome">Nome do Evento Esportivo *</label>
+              <input type="text" id="eventNome" required placeholder="Ex: Torneio Integração UNYCO 2026">
+            </div>
+            <div class="form-group flex-1">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="eventCategoriaId" style="margin-bottom: 0;">Categoria do Evento</label>
+                <button type="button" class="btn-link" style="font-size: 11px;" onclick="app.openCreateCategoryModal()">+ Nova</button>
+              </div>
+              <select id="eventCategoriaId">
+                <option value="">Selecione a categoria...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="eventModalidade">Modalidade Esportiva *</label>
+              <input type="text" id="eventModalidade" list="modalitiesList" required placeholder="Ex: Futebol, Corrida, Vôlei">
+              <datalist id="modalitiesList">
+                <option value="Corrida de Rua">
+                <option value="Futebol Society">
+                <option value="Futsal">
+                <option value="Beach Tennis">
+                <option value="Vôlei de Quadra">
+                <option value="Vôlei de Praia">
+                <option value="Basquete 3x3">
+                <option value="Natação">
+                <option value="Ciclismo">
+                <option value="Crossfit / Funcional">
+                <option value="Tênis">
+                <option value="Maratona">
+              </datalist>
+            </div>
+            <div class="form-group flex-2">
+              <label for="eventLocal">Local do Evento (Estádio / Clube / Arena) *</label>
+              <input type="text" id="eventLocal" required placeholder="Ex: Parque Ibirapuera ou Ginásio Poliesportivo">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="eventCidade">Cidade</label>
+              <input type="text" id="eventCidade" value="São Paulo" placeholder="Cidade">
+            </div>
+            <div class="form-group" style="width: 80px;">
+              <label for="eventEstado">UF</label>
+              <input type="text" id="eventEstado" value="SP" maxlength="2" placeholder="UF">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="eventDataInicio">Data e Hora de Início *</label>
+              <input type="datetime-local" id="eventDataInicio" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="eventDataFim">Data e Hora de Término</label>
+              <input type="datetime-local" id="eventDataFim">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="eventCapacidade">Capacidade de Atletas / Vagas</label>
+              <input type="number" id="eventCapacidade" min="1" placeholder="Ex: 500">
+            </div>
+            <div class="form-group flex-1">
+              <label for="eventValorInscricao">Valor da Inscrição (R$)</label>
+              <input type="number" step="0.01" min="0" id="eventValorInscricao" placeholder="0.00 (Gratuito se vazio)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="eventBannerUrl">URL da Imagem / Banner do Evento</label>
+            <input type="url" id="eventBannerUrl" placeholder="https://images.unsplash.com/...">
+          </div>
+
+          <div class="form-group">
+            <label for="eventDescricao">Descrição e Detalhes do Evento</label>
+            <textarea id="eventDescricao" rows="3" placeholder="Informações do regulamento, premiações, kits esportivos e atrações..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('eventModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveEvent">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Evento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: DETALHES DO PARCEIRO E SEUS EVENTOS               -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="partnerDetailsModal">
+    <div class="modal-dialog modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" id="partnerDetailsLogoContainer"><i class="fa-solid fa-building"></i></div>
+          <div>
+            <h3 id="partnerDetailsName">Nome do Parceiro</h3>
+            <p id="partnerDetailsMeta">Detalhes cadastrais e histórico de eventos realizados</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('partnerDetailsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="partner-info-banner" id="partnerDetailsInfoBanner">
+          <!-- Dados completos do parceiro -->
+        </div>
+
+        <div class="partner-events-section">
+          <div class="section-sub-header">
+            <h4><i class="fa-solid fa-calendar-check"></i> Eventos Realizados por este Parceiro (<span id="partnerEventsCount">0</span>)</h4>
+            <button class="btn btn-sm btn-primary" id="btnAddNewEventForPartner">
+              <i class="fa-solid fa-plus"></i> Adicionar Evento para este Parceiro
+            </button>
+          </div>
+
+          <div class="partner-events-table-wrapper" id="partnerEventsTableWrapper">
+            <!-- Tabela ou lista de eventos vinculados -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ========================================================== -->
+  <!-- MODAL: AJUSTE DE TAXAS DE COMISSÃO E PIX DO PARCEIRO       -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="partnerCommissionsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #DCFCE7; color: #166534;"><i class="fa-solid fa-coins"></i></div>
+          <div>
+            <h3 id="commModalPartnerName">Taxas de Comissão do Parceiro</h3>
+            <p>Configuração de % de ganho em inscrições e hotelaria UNYCO</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('partnerCommissionsModal')">&times;</button>
+      </div>
+      <form id="partnerCommissionsForm" onsubmit="app.handleSavePartnerCommissions(event)">
+        <input type="hidden" id="commModalPartnerId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="commInscricaoPct">Comissão em Inscrições (%) *</label>
+              <input type="number" step="0.1" min="0" max="100" id="commInscricaoPct" required placeholder="Ex: 10.0">
+              <small style="font-size: 11px; color: var(--text-muted);">% de ganho sobre os ingressos/vagas vendidos.</small>
+            </div>
+            <div class="form-group flex-1">
+              <label for="commHotelariaPct">Comissão em Hotelaria (%) *</label>
+              <input type="number" step="0.1" min="0" max="100" id="commHotelariaPct" required placeholder="Ex: 8.0">
+              <small style="font-size: 11px; color: var(--text-muted);">% de cashback/ganho sobre reservas de hotéis dos atletas e familiares.</small>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label for="commChavePix">Chave PIX para Repasse de Comissões</label>
+            <input type="text" id="commChavePix" placeholder="CNPJ, Email, Telefone ou Chave Aleatória">
+          </div>
+
+          <div class="form-group">
+            <label for="commBancoRepasse">Dados Bancários / Observações de Liquidação</label>
+            <input type="text" id="commBancoRepasse" placeholder="Ex: Banco Itaú (341) Ag 0123 CC 45678-9">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('partnerCommissionsModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveCommissions">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Configuração
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRO / EDIÇÃO DE HOTEL NA CURADORIA UNYCO       -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="hotelModal">
+    <div class="modal-dialog modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #E0F2FE; color: #0369A1;"><i class="fa-solid fa-hotel"></i></div>
+          <div>
+            <h3 id="hotelModalTitle">Novo Hotel na Curadoria UNYCO</h3>
+            <p>Cadastre hotéis com tarifas exclusivas para atletas, alunos e familiares</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('hotelModal')">&times;</button>
+      </div>
+      <form id="hotelForm" onsubmit="app.handleSaveHotel(event)">
+        <input type="hidden" id="hotelFormId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="hotelNome">Nome do Hotel / Resort *</label>
+              <input type="text" id="hotelNome" required placeholder="Ex: Grand Hotel Ibirapuera & Spa">
+            </div>
+            <div class="form-group flex-1">
+              <label for="hotelEstrelas">Classificação (Estrelas)</label>
+              <select id="hotelEstrelas">
+                <option value="3">★★★ (3 Estrelas)</option>
+                <option value="4" selected>★★★★ (4 Estrelas)</option>
+                <option value="5">★★★★★ (5 Estrelas Luxo)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="hotelCidade">Cidade *</label>
+              <input type="text" id="hotelCidade" required value="São Paulo" placeholder="Ex: São Paulo">
+            </div>
+            <div class="form-group" style="width: 80px;">
+              <label for="hotelEstado">UF</label>
+              <input type="text" id="hotelEstado" value="SP" maxlength="2" placeholder="UF">
+            </div>
+            <div class="form-group flex-2">
+              <label for="hotelEndereco">Endereço Completo</label>
+              <input type="text" id="hotelEndereco" placeholder="Ex: Av. Ibirapuera, 1200 - Moema">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="hotelTarifaMedia">Tarifa Balcão Padrão (R$) *</label>
+              <input type="number" step="0.01" min="0" id="hotelTarifaMedia" required placeholder="Ex: 580.00">
+            </div>
+            <div class="form-group flex-1">
+              <label for="hotelTarifaAtleta">Tarifa Atleta UNYCO (R$) *</label>
+              <input type="number" step="0.01" min="0" id="hotelTarifaAtleta" required placeholder="Ex: 449.00">
+              <small style="font-size: 11px; color: #059669; font-weight: 700;">Preço com desconto exclusivo para o evento</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="hotelFotoUrl">URL da Foto do Hotel</label>
+            <input type="url" id="hotelFotoUrl" placeholder="https://images.unsplash.com/...">
+          </div>
+
+          <div class="form-group">
+            <label for="hotelComodidades">Comodidades & Serviços Inclusos</label>
+            <input type="text" id="hotelComodidades" placeholder="Ex: Café Especial Atleta, Wi-Fi 500MB, Piscina Térmica, Sauna, Transfer">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="hotelTelefone">Telefone / WhatsApp de Reservas</label>
+              <input type="text" id="hotelTelefone" placeholder="(11) 5055-1234">
+            </div>
+            <div class="form-group flex-1">
+              <label for="hotelEmail">Email de Reservas</label>
+              <input type="email" id="hotelEmail" placeholder="reservas@hotel.com.br">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('hotelModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveHotel">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Hotel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: EXTRATO FINANCEIRO DETALHADO DO PARCEIRO            -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="partnerStatementModal">
+    <div class="modal-dialog modal-large">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #F3E8FF; color: #7C3AED;"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <div>
+            <h3 id="stmtModalPartnerName">Extrato de Ganhos & Repasses</h3>
+            <p id="stmtModalPartnerMeta">Demonstrativo financeiro de comissões por inscrições e hotelaria</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('partnerStatementModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="partnerStatementBody">
+        <!-- Preenchido via JavaScript com cards e tabelas consolidadas -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir Extrato</button>
+        <button type="button" class="btn btn-primary" onclick="app.closeModal('partnerStatementModal')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: VINCULAR HOTÉIS A UM EVENTO                         -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="eventHotelLinkModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #E0F2FE; color: #0369A1;"><i class="fa-solid fa-link"></i></div>
+          <div>
+            <h3 id="linkHotelEventTitle">Vincular Hotel ao Evento</h3>
+            <p>Defina a distância e o cupom de desconto exclusivo</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('eventHotelLinkModal')">&times;</button>
+      </div>
+      <form id="eventHotelLinkForm" onsubmit="app.handleLinkHotelToEvent(event)">
+        <input type="hidden" id="linkHotelEventId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="linkHotelSelect">Hotel da Curadoria UNYCO *</label>
+            <select id="linkHotelSelect" required>
+              <option value="">Selecione o hotel...</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="linkHotelDistancia">Distância até a Prova (km)</label>
+              <input type="number" step="0.1" min="0" id="linkHotelDistancia" value="1.5" placeholder="Ex: 1.5">
+            </div>
+            <div class="form-group flex-1">
+              <label for="linkHotelDescontoPct">Desconto (%)</label>
+              <input type="number" step="1" min="0" max="100" id="linkHotelDescontoPct" value="15" placeholder="Ex: 15">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="linkHotelCupom">Cupom Promocional Atleta</label>
+            <input type="text" id="linkHotelCupom" value="UNYCO2026" placeholder="Ex: NIGHTRUN2026">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('eventHotelLinkModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Vincular Hotel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRAR / EDITAR USUÁRIO & PERFIL (EXCLUSIVO ADM)  -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="userFormModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #FDF2F8; color: #BE185D;"><i class="fa-solid fa-user-gear"></i></div>
+          <div>
+            <h3 id="userFormModalTitle">Novo Operador do Sistema</h3>
+            <p>Defina credenciais, cargo e nível de acesso (RBAC)</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('userFormModal')">&times;</button>
+      </div>
+      <form id="userManagementForm" onsubmit="app.handleSaveUser(event)">
+        <input type="hidden" id="userFormId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="userNome">Nome Completo *</label>
+            <input type="text" id="userNome" required placeholder="Ex: Juliana Prado">
+          </div>
+
+          <div class="form-group">
+            <label for="userEmail">Email Corporativo / Login *</label>
+            <input type="email" id="userEmail" required placeholder="Ex: juliana.prado@unyco.com.br">
+          </div>
+
+          <div class="form-group">
+            <label for="userSenha">Senha de Acesso *</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="userSenha" placeholder="Digite a senha (mínimo 6 caracteres)">
+              <button type="button" class="btn-toggle-password" onclick="app.togglePasswordVisibility('userSenha', this)" title="Exibir/Ocultar Senha">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <small style="color: var(--text-dim); font-size: 11px; display: block; margin-top: 4px;" id="userSenhaHelp">Na criação a senha é obrigatória. Na edição, deixe em branco para manter a atual.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="userPerfil">Perfil de Acesso & Permissões (RBAC) *</label>
+            <div class="role-cards-grid" id="roleCardsGrid">
+              <div class="role-card-option" data-role="ADMIN" onclick="app.selectUserRoleInModal('ADMIN')">
+                <div class="role-header">
+                  <span style="color: #BE185D;"><i class="fa-solid fa-crown"></i> Administrador</span>
+                  <span class="badge badge-adm">ADM</span>
+                </div>
+                <div class="role-desc">Acesso total & aprovação de propostas</div>
+              </div>
+
+              <div class="role-card-option selected-role-REPRESENTANTE" data-role="REPRESENTANTE" onclick="app.selectUserRoleInModal('REPRESENTANTE')">
+                <div class="role-header">
+                  <span style="color: #1D4ED8;"><i class="fa-solid fa-handshake"></i> Representante</span>
+                  <span class="badge badge-rep">REP</span>
+                </div>
+                <div class="role-desc">Cadastra parceiros e eventos esportivos</div>
+              </div>
+
+              <div class="role-card-option" data-role="CONSULTOR" onclick="app.selectUserRoleInModal('CONSULTOR')">
+                <div class="role-header">
+                  <span style="color: #047857;"><i class="fa-solid fa-hotel"></i> Consultor</span>
+                  <span class="badge badge-consultor">CONSULTOR</span>
+                </div>
+                <div class="role-desc">Curadoria de hotéis e cotações</div>
+              </div>
+
+              <div class="role-card-option" data-role="PARCEIRO" onclick="app.selectUserRoleInModal('PARCEIRO')">
+                <div class="role-header">
+                  <span style="color: #B45309;"><i class="fa-solid fa-handshake-simple"></i> Parceiro</span>
+                  <span class="badge badge-parceiro">PARCEIRO</span>
+                </div>
+                <div class="role-desc">Eventos e extratos financeiros próprios</div>
+              </div>
+            </div>
+
+            <select id="userPerfil" required onchange="app.updateUserRoleHelpText(this.value)" style="margin-top: 8px;">
+              <option value="ADMIN">👑 Administrador Geral (ADM) - Acesso Total & Aprovação</option>
+              <option value="REPRESENTANTE" selected>🤝 Representante Comercial - Cadastra Parceiros e Eventos</option>
+              <option value="CONSULTOR">🏨 Consultor de Viagens - Curadoria de Hotéis e Cotações</option>
+              <option value="PARCEIRO">🏅 Parceiro / Organizador - Gestão de Eventos e Extratos Próprios</option>
+            </select>
+            <div id="userRoleDescriptionBox" style="margin-top: 6px; padding: 10px 12px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-sm); font-size: 12px; color: #1E40AF; line-height: 1.4;">
+              <i class="fa-solid fa-circle-info"></i> <strong>Representante:</strong> Cadastra parceiros, eventos esportivos e categorias. Não aprova propostas comerciais.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="userCargo">Cargo / Função na Empresa</label>
+            <input type="text" id="userCargo" placeholder="Ex: Coordenadora Comercial SP">
+          </div>
+
+          <div class="form-group">
+            <label for="userAvatarUrl">URL da Foto / Avatar</label>
+            <input type="url" id="userAvatarUrl" placeholder="https://..." value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150">
+          </div>
+
+          <div class="form-group">
+            <label class="remember-me-checkbox" style="font-weight: 600; color: #0F172A;">
+              <input type="checkbox" id="userAtivo" checked>
+              <span>Operador Ativo no Sistema (Permitir Login)</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('userFormModal')">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveUserSubmit">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar Operador
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Script principal da aplicação -->
+  <script src="./js/app-unyco.js?v=20260922_11"></script>
+</body>
+</html>

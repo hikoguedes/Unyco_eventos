@@ -1,0 +1,56 @@
+services:
+  # Serviço do Banco de Dados PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: unyco_eventos_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-unyco_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-unyco_secret}
+      POSTGRES_DB: ${DB_NAME:-unyco_eventos_db}
+    ports:
+      - "${DB_PORT:-5442}:5432"
+    volumes:
+      - unyco_eventos_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-unyco_user} -d ${DB_NAME:-unyco_eventos_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unyco_eventos_network
+
+  # Serviço da Aplicação Node.js
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unyco_eventos_app
+    restart: always
+    ports:
+      - "${PORT:-3060}:${PORT:-3060}"
+    environment:
+      NODE_ENV: development
+      PORT: ${PORT:-3060}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-unyco_user}
+      DB_PASSWORD: ${DB_PASSWORD:-unyco_secret}
+      DB_NAME: ${DB_NAME:-unyco_eventos_db}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - unyco_eventos_network
+
+volumes:
+  unyco_eventos_postgres_data:
+    name: unyco_eventos_postgres_data
+
+networks:
+  unyco_eventos_network:
+    name: unyco_eventos_network

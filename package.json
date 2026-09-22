@@ -1,0 +1,30 @@
+{
+  "name": "eventos-unyco-esporte",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão de Eventos Esportivos e Parceiros - UNYCO Esporte",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "nodejs",
+    "postgresql",
+    "docker",
+    "eventos",
+    "esporte",
+    "unyco"
+  ],
+  "author": "UNYCO Esporte",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "embedded-postgres": "^18.4.0-beta.17",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.11.5",
+    "pg-mem": "^3.0.14",
+    "sqlite3": "^6.0.1"
+  }
+}

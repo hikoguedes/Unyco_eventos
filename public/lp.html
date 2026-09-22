@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscrição Oficial & Curadoria de Hotéis | UNYCO Esporte</title>
+  <meta name="description" content="Página oficial de inscrição e curadoria de hospedagem para eventos esportivos UNYCO Esporte.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    /* Estilos específicos da Landing Page Pública */
+    .lp-body {
+      background-color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lp-navbar {
+      background: #FFFFFF;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+
+    .lp-container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 60px 20px;
+      width: 100%;
+    }
+
+    .lp-hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .lp-event-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 28px;
+    }
+
+    .lp-event-banner-wrap {
+      height: 240px;
+      position: relative;
+      background: #E2E8F0;
+    }
+
+    .lp-event-banner {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .lp-event-content {
+      padding: 28px;
+    }
+
+    .lp-partner-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .lp-partner-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      border: 1px solid #E2E8F0;
+    }
+
+    .lp-form-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .lp-form-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .lp-form-header h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lp-price-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      color: #047857;
+      font-weight: 800;
+      font-size: 20px;
+      padding: 6px 16px;
+      border-radius: var(--radius-md);
+      margin: 12px 0 20px 0;
+    }
+
+    /* Seção de Curadoria de Hotéis UNYCO */
+    .hotel-curation-section {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .curation-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .curation-header h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hotel-card-mini {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: var(--radius-lg);
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .hotel-card-mini:hover {
+      border-color: #0284C7;
+      background: #F0F9FF;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);
+    }
+
+    .hotel-card-mini.selected-hotel {
+      border-color: #0284C7;
+      background: #F0F9FF;
+      box-shadow: 0 0 0 2px #0284C7;
+    }
+
+    .hotel-mini-photo {
+      width: 110px;
+      height: 95px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .hotel-mini-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hotel-mini-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stars-badge {
+      color: #F59E0B;
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .hotel-dist-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #0284C7;
+      font-weight: 600;
+      margin: 4px 0;
+    }
+
+    .hotel-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+
+    .old-price {
+      font-size: 12px;
+      color: #94A3B8;
+      text-decoration: line-through;
+      margin-right: 6px;
+    }
+
+    .new-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: #059669;
+    }
+
+    .hotel-amenity-tags {
+      font-size: 11px;
+      color: #64748B;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .amenity-chip {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .voucher-card {
+      background: #FFFFFF;
+      border: 2px dashed #0284C7;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      text-align: center;
+      margin: 20px 0;
+      background: #F0F9FF;
+    }
+
+    .voucher-code {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: 800;
+      color: #0284C7;
+      letter-spacing: 2px;
+      margin: 12px 0;
+      background: #FFFFFF;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #BAE6FD;
+    }
+
+    .hotel-vip-voucher-box {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 18px;
+      text-align: left;
+    }
+
+    @media (max-width: 960px) {
+      .lp-hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .hotel-card-mini {
+        flex-direction: column;
+      }
+      .hotel-mini-photo {
+        width: 100%;
+        height: 140px;
+      }
+    }
+  </style>
+</head>
+<body class="lp-body">
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Navbar Pública -->
+  <nav class="lp-navbar">
+    <div class="brand-logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      <div class="brand-text">
+        <span class="brand-title">UNYCO</span>
+        <span class="brand-subtitle">INSCRIÇÕES & CURADORIA DE HOTÉIS</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="/" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Painel UNYCO</a>
+    </div>
+  </nav>
+
+  <!-- Conteúdo Principal -->
+  <div class="lp-container">
+    <div id="lpLoading" class="empty-state-loading" style="padding: 60px;">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: var(--primary);"></i>
+      <p style="margin-top: 14px; font-weight: 600;">Carregando dados do evento e hotéis da região...</p>
+    </div>
+
+    <div id="lpNotFound" style="display: none; text-align: center; padding: 60px;">
+      <i class="fa-solid fa-triangle-exclamation" style="font-size: 48px; color: #EF4444; margin-bottom: 16px;"></i>
+      <h2 style="font-size: 22px; font-weight: 800; color: #0F172A;">Evento Não Encontrado</h2>
+      <p style="color: var(--text-muted); margin-top: 8px;">O link acessado é inválido ou o evento não existe mais.</p>
+      <a href="/" class="btn btn-primary" style="margin-top: 20px;">Voltar ao Painel</a>
+    </div>
+
+    <div id="lpContent" class="lp-hero-grid" style="display: none;">
+      <!-- Coluna Esquerda: Informações do Evento + Curadoria de Hotéis -->
+      <div>
+        <div class="lp-event-card">
+          <div class="lp-event-banner-wrap">
+            <img id="lpEventBanner" class="lp-event-banner" src="" alt="Banner do Evento">
+            <span id="lpEventCategory" class="event-category-badge" style="display: none;"></span>
+            <span id="lpEventStatus" class="event-status-badge status-agendado">Agendado</span>
+          </div>
+
+          <div class="lp-event-content">
+            <div class="lp-partner-badge-wrap">
+              <img id="lpPartnerLogo" class="lp-partner-logo" src="" alt="Logo do Parceiro">
+              <div>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Realização & Parceria</span>
+                <h4 id="lpPartnerName" style="font-size: 14px; font-weight: 700; color: #0F172A;">Nome do Parceiro</h4>
+              </div>
+            </div>
+
+            <h1 id="lpEventTitle" style="font-size: 24px; font-weight: 800; color: #0F172A; margin-bottom: 12px; line-height: 1.3;">Título do Evento</h1>
+            
+            <div class="lp-price-tag">
+              <i class="fa-solid fa-ticket"></i>
+              <span id="lpEventPrice">Gratuito</span>
+            </div>
+
+            <div class="event-meta-grid" style="margin-bottom: 20px;">
+              <div class="event-meta-item">
+                <i class="fa-solid fa-trophy"></i>
+                <span id="lpEventModality">Modalidade</span>
+              </div>
+              <div class="event-meta-item">
+                <i class="fa-regular fa-calendar-days"></i>
+                <span id="lpEventDate">Data e Hora</span>
+              </div>
+              <div class="event-meta-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <span id="lpEventLocation">Localização</span>
+              </div>
+              <div class="event-meta-item">
+                <i class="fa-solid fa-users"></i>
+                <span id="lpEventCapacity">Vagas Restantes</span>
+              </div>
+            </div>
+
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 18px; border-radius: var(--radius-md);">
+              <h4 style="font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+                <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Regulamento & Informações:
+              </h4>
+              <p id="lpEventDescription" style="font-size: 13px; color: var(--text-muted); line-height: 1.6;"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Curadoria de Hotéis UNYCO para Atletas e Famílias -->
+        <div class="hotel-curation-section">
+          <div class="curation-header">
+            <div>
+              <h3><i class="fa-solid fa-hotel" style="color: #0284C7;"></i> Hospedagem Oficial & Curadoria UNYCO</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Tarifas especiais negociadas para atletas, alunos, comissões técnicas e familiares.
+              </p>
+            </div>
+            <span class="badge" style="background: #E0F2FE; color: #0369A1; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+              <i class="fa-solid fa-tag"></i> Descontos de até 20%
+            </span>
+          </div>
+
+          <div id="hotelCurationList">
+            <div class="empty-state-loading"><i class="fa-solid fa-spinner fa-spin"></i> Carregando hotéis curados...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Formulário de Inscrição Oficial -->
+      <div>
+        <div class="lp-form-card" id="formWrapper">
+          <div class="lp-form-header">
+            <h2><i class="fa-solid fa-id-card-clip" style="color: var(--primary);"></i> Inscrição de Atleta</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Preencha seus dados para garantir sua vaga e seu kit oficial.</p>
+          </div>
+
+          <form id="registrationForm" onsubmit="lp.handleSubmitRegistration(event)">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="regNome">Nome Completo do Participante / Atleta *</label>
+              <input type="text" id="regNome" required placeholder="Ex: Rodrigo Silva de Oliveira">
+            </div>
+
+            <div class="form-row" style="margin-bottom: 14px;">
+              <div class="form-group flex-1">
+                <label for="regCpf">CPF *</label>
+                <input type="text" id="regCpf" required placeholder="000.000.000-00">
+              </div>
+              <div class="form-group flex-1">
+                <label for="regNascimento">Data de Nascimento</label>
+                <input type="date" id="regNascimento">
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 14px;">
+              <div class="form-group flex-1">
+                <label for="regEmail">Email para Confirmação *</label>
+                <input type="email" id="regEmail" required placeholder="seuemail@exemplo.com">
+              </div>
+              <div class="form-group flex-1">
+                <label for="regTelefone">WhatsApp / Celular *</label>
+                <input type="text" id="regTelefone" required placeholder="(11) 99999-9999">
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 14px;">
+              <div class="form-group flex-1">
+                <label for="regGenero">Gênero</label>
+                <select id="regGenero">
+                  <option value="Masculino">Masculino</option>
+                  <option value="Feminino">Feminino</option>
+                  <option value="Outro">Outro / Prefiro não informar</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="regCamiseta">Tamanho da Camiseta / Kit</label>
+                <select id="regCamiseta">
+                  <option value="P">P (Pequeno)</option>
+                  <option value="M" selected>M (Médio)</option>
+                  <option value="G">G (Grande)</option>
+                  <option value="GG">GG (Extra Grande)</option>
+                  <option value="XG">XG (Especial)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Seção de Hospedagem UNYCO no Formulário -->
+            <div style="background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 10px;">
+                <input type="checkbox" id="regHospedagemCheck" onchange="lp.toggleHospedagemFields(this.checked)" checked style="margin-top: 3px;">
+                <div>
+                  <strong style="font-size: 13px; color: #0369A1;">
+                    <i class="fa-solid fa-hotel"></i> Desejo tarifa especial de hotel para mim / família / equipe
+                  </strong>
+                  <p style="font-size: 11px; color: #475569; margin-top: 2px;">
+                    Acesso exclusivo ao canal VIP UNYCO com desconto garantido na rede de hotéis do evento.
+                  </p>
+                </div>
+              </label>
+
+              <div id="hospedagemExtraFields" style="display: block;">
+                <div class="form-row" style="margin-top: 8px;">
+                  <div class="form-group flex-1">
+                    <label for="regHotelSelect" style="font-size: 12px; color: #0F172A;">Hotel Preferido</label>
+                    <select id="regHotelSelect" style="font-size: 13px; padding: 8px;">
+                      <option value="">Qualquer hotel disponível na curadoria</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="width: 130px;">
+                    <label for="regHospedesQtd" style="font-size: 12px; color: #0F172A;">Hóspedes</label>
+                    <select id="regHospedesQtd" style="font-size: 13px; padding: 8px;">
+                      <option value="1">1 Pessoa</option>
+                      <option value="2" selected>2 Pessoas</option>
+                      <option value="3">3 Pessoas</option>
+                      <option value="4">4+ Pessoas</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 14px; margin-bottom: 18px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; display: block; margin-bottom: 8px;">
+                <i class="fa-solid fa-kit-medical" style="color: #EF4444;"></i> Contato para Emergência
+              </span>
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <input type="text" id="regEmergenciaNome" placeholder="Nome do contato (Ex: Maria - Mãe)">
+                </div>
+                <div class="form-group flex-1">
+                  <input type="text" id="regEmergenciaTelefone" placeholder="Telefone de emergência">
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-muted); cursor: pointer;">
+                <input type="checkbox" required checked style="margin-top: 3px;">
+                <span>Declaro estar apto fisicamente para participar do evento e aceito o regulamento da organização.</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnSubmitRegistration" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">
+              <i class="fa-solid fa-check-circle"></i> Confirmar Minha Inscrição
+            </button>
+          </form>
+        </div>
+
+        <!-- Confirmação e Voucher de Inscrição (Aparece após submissão) -->
+        <div class="lp-form-card" id="voucherWrapper" style="display: none;">
+          <div style="text-align: center;">
+            <div style="width: 64px; height: 64px; background: #DCFCE7; color: #16A34A; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 14px;">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-size: 22px; font-weight: 800; color: #0F172A;">Inscrição Confirmada!</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Apresente este código na retirada do kit do evento.</p>
+          </div>
+
+          <div class="voucher-card">
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Código da Inscrição</span>
+            <div class="voucher-code" id="vouchCode">UNY-2026-00000</div>
+            <p id="vouchAthleteName" style="font-weight: 700; font-size: 16px; color: #0F172A;"></p>
+            <p id="vouchEventTitle" style="font-size: 13px; color: var(--primary); font-weight: 600; margin-top: 4px;"></p>
+          </div>
+
+          <!-- Box VIP de Hospedagem UNYCO no Voucher -->
+          <div class="hotel-vip-voucher-box" id="voucherHotelBox">
+            <h4 style="font-size: 14px; font-weight: 800; color: #1E40AF; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-bed"></i> Benefício de Hospedagem Oficial UNYCO
+            </h4>
+            <p style="font-size: 12px; color: #334155; line-height: 1.5;" id="vouchHotelText">
+              Você tem tarifa especial garantida na rede de hotéis parceiros do evento.
+            </p>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: #FFFFFF; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid #BFDBFE;">
+              <div>
+                <span style="font-size: 11px; color: #64748B; font-weight: 600;">CUPOM PROMOCIONAL ATLETA:</span>
+                <strong style="font-size: 14px; color: #0284C7; display: block;" id="vouchCupomCode">UNYCOESPORTE</strong>
+              </div>
+              <a href="https://unyco.tur.br" target="_blank" class="btn btn-primary btn-sm" id="btnConciergeWhatsapp">
+                <i class="fa-brands fa-whatsapp"></i> Concierge VIP
+              </a>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button class="btn btn-secondary flex-1" onclick="window.print()" style="justify-content: center;">
+              <i class="fa-solid fa-print"></i> Imprimir Voucher
+            </button>
+            <button class="btn btn-primary flex-1" onclick="location.reload()" style="justify-content: center;">
+              <i class="fa-solid fa-user-plus"></i> Nova Inscrição
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script da LP -->
+  <script src="./js/lp.js"></script>
+</body>
+</html>

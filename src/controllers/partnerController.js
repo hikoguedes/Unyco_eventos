@@ -1,0 +1,220 @@
+const db = require('../config/database');
+
+// Listar todos os parceiros com contagem de eventos
+exports.getAllPartners = async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    let queryText = `
+      SELECT 
+        p.*,
+        COUNT(e.id)::int AS total_eventos
+      FROM parceiros p
+      LEFT JOIN eventos e ON e.parceiro_id = p.id
+    `;
+    const queryParams = [];
+    const conditions = [];
+
+    if (status) {
+      queryParams.push(status);
+      conditions.push(`p.status = $${queryParams.length}`);
+    }
+
+    if (search) {
+      queryParams.push(`%${search}%`);
+      conditions.push(`(p.nome_fantasia ILIKE $${queryParams.length} OR p.cnpj ILIKE $${queryParams.length} OR p.email ILIKE $${queryParams.length})`);
+    }
+
+    if (conditions.length > 0) {
+      queryText += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    queryText += `
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `;
+
+    const result = await db.query(queryText, queryParams);
+    return res.json({
+      success: true,
+      count: result.rowCount,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Erro ao listar parceiros:', error);
+    return res.status(500).json({ success: false, message: 'Erro interno ao consultar parceiros', error: error.message });
+  }
+};
+
+// Obter dados de um parceiro específico incluindo a lista completa de eventos
+exports.getPartnerById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const partnerResult = await db.query('SELECT * FROM parceiros WHERE id = $1', [id]);
+    if (partnerResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parceiro não encontrado' });
+    }
+
+    const eventsResult = await db.query(
+      'SELECT * FROM eventos WHERE parceiro_id = $1 ORDER BY data_inicio DESC',
+      [id]
+    );
+
+    const partner = partnerResult.rows[0];
+    partner.eventos = eventsResult.rows;
+
+    return res.json({
+      success: true,
+      data: partner,
+    });
+  } catch (error) {
+    console.error('Erro ao buscar parceiro por ID:', error);
+    return res.status(500).json({ success: false, message: 'Erro interno ao buscar parceiro', error: error.message });
+  }
+};
+
+// Cadastrar novo parceiro
+exports.createPartner = async (req, res) => {
+  try {
+    const {
+      nome_fantasia,
+      razao_social,
+      cnpj,
+      email,
+      telefone,
+      responsavel,
+      categoria,
+      status,
+      logo_url,
+      website
+    } = req.body;
+
+    if (!nome_fantasia) {
+      return res.status(400).json({ success: false, message: 'O campo Nome Fantasia é obrigatório' });
+    }
+
+    const queryText = `
+      INSERT INTO parceiros (
+        nome_fantasia, razao_social, cnpj, email, telefone, 
+        responsavel, categoria, status, logo_url, website
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `;
+
+    const values = [
+      nome_fantasia,
+      razao_social || null,
+      cnpj || null,
+      email || null,
+      telefone || null,
+      responsavel || null,
+      categoria || 'Clube',
+      status || 'ativo',
+      logo_url || null,
+      website || null
+    ];
+
+    const result = await db.query(queryText, values);
+    return res.status(201).json({
+      success: true,
+      message: 'Parceiro cadastrado com sucesso',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Erro ao criar parceiro:', error);
+    if (error.code === '23505') { // Unique constraint violation (CNPJ)
+      return res.status(400).json({ success: false, message: 'Já existe um parceiro cadastrado com este CNPJ' });
+    }
+    return res.status(500).json({ success: false, message: 'Erro ao cadastrar parceiro', error: error.message });
+  }
+};
+
+// Atualizar dados de um parceiro
+exports.updatePartner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      nome_fantasia,
+      razao_social,
+      cnpj,
+      email,
+      telefone,
+      responsavel,
+      categoria,
+      status,
+      logo_url,
+      website
+    } = req.body;
+
+    const queryText = `
+      UPDATE parceiros
+      SET 
+        nome_fantasia = COALESCE($1, nome_fantasia),
+        razao_social = COALESCE($2, razao_social),
+        cnpj = COALESCE($3, cnpj),
+        email = COALESCE($4, email),
+        telefone = COALESCE($5, telefone),
+        responsavel = COALESCE($6, responsavel),
+        categoria = COALESCE($7, categoria),
+        status = COALESCE($8, status),
+        logo_url = COALESCE($9, logo_url),
+        website = COALESCE($10, website)
+      WHERE id = $11
+      RETURNING *
+    `;
+
+    const values = [
+      nome_fantasia,
+      razao_social,
+      cnpj,
+      email,
+      telefone,
+      responsavel,
+      categoria,
+      status,
+      logo_url,
+      website,
+      id
+    ];
+
+    const result = await db.query(queryText, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parceiro não encontrado para atualização' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Parceiro atualizado com sucesso',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar parceiro:', error);
+    if (error.code === '23505') {
+      return res.status(400).json({ success: false, message: 'Este CNPJ já está sendo utilizado por outro parceiro' });
+    }
+    return res.status(500).json({ success: false, message: 'Erro ao atualizar parceiro', error: error.message });
+  }
+};
+
+// Excluir parceiro (e seus eventos em cascata)
+exports.deletePartner = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.query('DELETE FROM parceiros WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parceiro não encontrado para exclusão' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Parceiro e seus eventos associados foram excluídos com sucesso',
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error('Erro ao excluir parceiro:', error);
+    return res.status(500).json({ success: false, message: 'Erro ao excluir parceiro', error: error.message });
+  }
+};

@@ -1,0 +1,12 @@
+node_modules/
+.git/
+.env
+*.log
+data/
+.dockerignore
+Dockerfile
+docker-compose.yml
+check-script.js
+deploy-vps.sh
+nginx-unyco.conf
+.env.production
