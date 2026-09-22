@@ -1,23 +1,36 @@
 /**
  * UNYCO ESPORTE - Public Landing Page & Hotel Curation Script
+ * Suporta acesso por ID do evento (?id=X) e por ID do parceiro/academia (?parceiro=X ou ?partnerId=X)
  */
 
 const lp = {
   eventId: null,
+  partnerId: null,
   eventData: null,
+  partnerData: null,
   curatedHotels: [],
   selectedHotelId: null,
 
   init() {
     const params = new URLSearchParams(window.location.search);
-    this.eventId = params.get('id');
+    this.partnerId = params.get('parceiro') || params.get('partnerId') || params.get('partner');
+    this.eventId = params.get('id') || params.get('eventId');
 
-    if (!this.eventId) {
-      this.showNotFound();
+    if (!this.partnerId && !this.eventId) {
+      this.showNotFound('Página Não Encontrada', 'Por favor informe o link oficial do evento ou da academia/parceiro.');
       return;
     }
 
-    this.loadEventAndHotels();
+    if (this.partnerId && !this.eventId) {
+      // Abre o Hub Oficial do Parceiro para os alunos e atletas
+      this.loadPartnerHub();
+    } else {
+      // Abre a página do evento
+      if (this.partnerId) {
+        this.fetchPartnerData(this.partnerId);
+      }
+      this.loadEventAndHotels();
+    }
   },
 
   urlWithBase(url) {
@@ -33,6 +46,211 @@ const lp = {
     return url;
   },
 
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  },
+
+  showNotFound(title = 'Página Não Encontrada', text = 'O link acessado é inválido ou o conteúdo não existe mais.') {
+    document.getElementById('lpLoading').style.display = 'none';
+    const notFoundEl = document.getElementById('lpNotFound');
+    if (notFoundEl) {
+      notFoundEl.style.display = 'block';
+      const titleEl = document.getElementById('lpNotFoundTitle');
+      const textEl = document.getElementById('lpNotFoundText');
+      if (titleEl) titleEl.textContent = title;
+      if (textEl) textEl.textContent = text;
+    }
+    document.getElementById('lpContent').style.display = 'none';
+    const hub = document.getElementById('lpPartnerHub');
+    if (hub) hub.style.display = 'none';
+  },
+
+  async fetchPartnerData(id) {
+    try {
+      const res = await fetch(this.urlWithBase(`/api/partners/${id}`));
+      const json = await res.json();
+      if (json.success && json.data) {
+        this.partnerData = json.data;
+        this.updateBackButton();
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar dados do parceiro:', e);
+    }
+  },
+
+  updateBackButton() {
+    const nav = document.getElementById('lpBackNavContainer');
+    const text = document.getElementById('lpBackPartnerText');
+    if (nav && this.partnerData) {
+      nav.style.display = 'block';
+      if (text) {
+        text.textContent = `Voltar para todos os eventos da ${this.partnerData.nome_fantasia}`;
+      }
+    }
+  },
+
+  async loadPartnerHub() {
+    try {
+      document.getElementById('lpLoading').style.display = 'block';
+      document.getElementById('lpNotFound').style.display = 'none';
+      document.getElementById('lpContent').style.display = 'none';
+      const hub = document.getElementById('lpPartnerHub');
+      if (hub) hub.style.display = 'none';
+
+      const res = await fetch(this.urlWithBase(`/api/partners/${this.partnerId}`));
+      const json = await res.json();
+
+      if (!json.success || !json.data) {
+        this.showNotFound('Academia / Parceiro Não Encontrado', 'O link informado para esta academia ou parceiro não foi localizado no sistema.');
+        return;
+      }
+
+      this.partnerData = json.data;
+      this.renderPartnerHub();
+    } catch (err) {
+      console.error('Erro ao carregar hub do parceiro:', err);
+      this.showNotFound('Erro de Carregamento', 'Não foi possível carregar a página da academia. Tente novamente mais tarde.');
+    }
+  },
+
+  renderPartnerHub() {
+    const p = this.partnerData;
+    document.getElementById('lpLoading').style.display = 'none';
+    document.getElementById('lpNotFound').style.display = 'none';
+    document.getElementById('lpContent').style.display = 'none';
+    const hub = document.getElementById('lpPartnerHub');
+    if (hub) hub.style.display = 'block';
+
+    // Top Header do Parceiro
+    const logoImg = document.getElementById('hubPartnerLogo');
+    if (logoImg) {
+      logoImg.src = p.logo_url || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+      logoImg.onerror = () => { logoImg.src = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150'; };
+    }
+
+    const nameEl = document.getElementById('hubPartnerName');
+    if (nameEl) nameEl.textContent = p.nome_fantasia;
+
+    const catEl = document.getElementById('hubPartnerCategory');
+    if (catEl) catEl.textContent = `${p.categoria || 'Academia'} • Parceiro Oficial UNYCO`;
+
+    // WhatsApp botão de contato
+    const waBtn = document.getElementById('hubWhatsappBtn');
+    if (waBtn) {
+      if (p.telefone) {
+        const phoneClean = p.telefone.replace(/\D/g, '');
+        const phoneFull = phoneClean.length <= 11 ? `55${phoneClean}` : phoneClean;
+        const msg = encodeURIComponent(`Olá equipe da ${p.nome_fantasia}! Sou atleta/aluno e estou entrando em contato através do portal oficial de eventos.`);
+        waBtn.href = `https://wa.me/${phoneFull}?text=${msg}`;
+        waBtn.style.display = 'inline-flex';
+      } else {
+        waBtn.style.display = 'none';
+      }
+    }
+
+    // Grid de Eventos
+    const events = p.eventos || [];
+    const countBadge = document.getElementById('hubEventsCountBadge');
+    if (countBadge) {
+      countBadge.textContent = `${events.length} evento${events.length === 1 ? '' : 's'} no calendário`;
+    }
+
+    const grid = document.getElementById('hubEventsGrid');
+    const noEvents = document.getElementById('hubNoEvents');
+
+    if (events.length === 0) {
+      if (grid) grid.innerHTML = '';
+      if (noEvents) noEvents.style.display = 'block';
+      return;
+    }
+
+    if (noEvents) noEvents.style.display = 'none';
+    if (grid) {
+      grid.innerHTML = events.map(e => {
+        const dateObj = new Date(e.data_inicio);
+        const formattedDate = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+        const valor = parseFloat(e.valor_inscricao || 0);
+        const priceStr = valor > 0 ? `R$ ${valor.toFixed(2).replace('.', ',')}` : 'Inscrição Gratuita';
+        const remaining = (e.capacidade || 100) - (e.total_inscritos || 0);
+
+        return `
+          <div class="hub-event-card">
+            <div class="hub-event-banner-wrap">
+              <img class="hub-event-banner" src="${e.banner_url || 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'}" alt="${this.escapeHtml(e.nome)}" onerror="this.src='https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'">
+              <span class="event-status-badge ${e.status === 'Agendado' ? 'status-agendado' : 'status-emandamento'}" style="position: absolute; top: 12px; right: 12px;">${e.status}</span>
+            </div>
+            <div class="hub-event-content">
+              <div>
+                <span style="font-size: 11px; font-weight: 700; color: #0284C7; text-transform: uppercase;">
+                  <i class="fa-solid fa-trophy"></i> ${this.escapeHtml(e.modalidade || 'Competição')}
+                </span>
+                <h3 class="hub-event-title">${this.escapeHtml(e.nome)}</h3>
+                
+                <div class="hub-event-meta">
+                  <div class="hub-event-meta-item">
+                    <i class="fa-regular fa-calendar-days"></i>
+                    <span>${formattedDate}</span>
+                  </div>
+                  <div class="hub-event-meta-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>${this.escapeHtml(e.cidade || 'SP')} • ${this.escapeHtml(e.local || '')}</span>
+                  </div>
+                  <div class="hub-event-meta-item">
+                    <i class="fa-solid fa-hotel"></i>
+                    <span style="color: #059669; font-weight: 600;">Descontos exclusivos em hotéis</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-top: 10px; border-top: 1px solid #E2E8F0;">
+                  <span style="font-size: 16px; font-weight: 800; color: #059669;">${priceStr}</span>
+                  <span style="font-size: 11px; color: var(--text-muted);">${Math.max(0, remaining)} vagas</span>
+                </div>
+                <button class="btn btn-primary" onclick="lp.selectEventFromPartner(${e.id})" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700;">
+                  <i class="fa-solid fa-ticket"></i> Inscrição Oficial & Hotéis
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  },
+
+  selectEventFromPartner(eventId) {
+    this.eventId = eventId;
+    const nav = document.getElementById('lpBackNavContainer');
+    const text = document.getElementById('lpBackPartnerText');
+    if (nav) {
+      nav.style.display = 'block';
+      if (text && this.partnerData) {
+        text.textContent = `Voltar para todos os eventos de ${this.partnerData.nome_fantasia}`;
+      }
+    }
+    const hub = document.getElementById('lpPartnerHub');
+    if (hub) hub.style.display = 'none';
+    document.getElementById('lpLoading').style.display = 'block';
+    this.loadEventAndHotels();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  showPartnerHub() {
+    this.eventId = null;
+    const nav = document.getElementById('lpBackNavContainer');
+    if (nav) nav.style.display = 'none';
+    document.getElementById('lpContent').style.display = 'none';
+    const hub = document.getElementById('lpPartnerHub');
+    if (hub) hub.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
   async loadEventAndHotels() {
     try {
       const [evRes, hotRes] = await Promise.all([
@@ -44,12 +262,16 @@ const lp = {
       const hotJson = await hotRes.json();
 
       if (!evJson.success || !evJson.data) {
-        this.showNotFound();
+        this.showNotFound('Evento Não Encontrado', 'O link acessado é inválido ou o evento não existe mais.');
         return;
       }
 
       this.eventData = evJson.data;
       this.curatedHotels = hotJson.success && hotJson.data ? hotJson.data : [];
+
+      if (!this.partnerData && this.eventData.parceiro_id) {
+        this.fetchPartnerData(this.eventData.parceiro_id);
+      }
 
       this.renderEvent();
       this.renderHotels();
@@ -59,17 +281,13 @@ const lp = {
     }
   },
 
-  showNotFound() {
-    document.getElementById('lpLoading').style.display = 'none';
-    document.getElementById('lpNotFound').style.display = 'block';
-    document.getElementById('lpContent').style.display = 'none';
-  },
-
   renderEvent() {
     const ev = this.eventData;
 
     document.getElementById('lpLoading').style.display = 'none';
     document.getElementById('lpNotFound').style.display = 'none';
+    const hub = document.getElementById('lpPartnerHub');
+    if (hub) hub.style.display = 'none';
     document.getElementById('lpContent').style.display = 'grid';
 
     // Banner & Título

@@ -1132,6 +1132,19 @@ window.app = {
           ${p.responsavel ? `<div class="partner-detail-item"><i class="fa-solid fa-user-tie"></i> <span>Resp: ${this.escapeHtml(p.responsavel)}</span></div>` : ''}
         </div>
 
+        <!-- Botão Rápido: Link da LP para Academia & Alunos -->
+        <div style="display: flex; gap: 6px; margin: 12px 0 14px 0; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-primary flex-1" onclick="app.copyPartnerLPLink(${p.id})" title="Copiar Link da LP deste parceiro para alunos e atletas">
+            <i class="fa-solid fa-link"></i> Link da LP
+          </button>
+          <a href="${this.getPartnerLPUrl(p.id)}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir Landing Page da academia/parceiro">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+          <button class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A;" onclick="app.sharePartnerLpWhatsApp(${p.id})" title="Compartilhar no WhatsApp com alunos e atletas">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+          </button>
+        </div>
+
         <div class="partner-card-footer">
           <button class="btn btn-sm btn-outline" onclick="app.viewPartnerDetails(${p.id})">
             <i class="fa-solid fa-calendar-days"></i> Ver Eventos (${p.total_eventos || 0})
@@ -1285,14 +1298,90 @@ window.app = {
     }).join('');
   },
 
-  // Copiar link da LP
+  // Retorna a URL da Landing Page do evento
+  getEventLPUrl(eventId) {
+    const origin = window.location.origin;
+    let base = window.BASE_PATH;
+    if (!base && typeof window !== 'undefined' && window.location && window.location.pathname.includes('/unycoeventos')) {
+      base = '/unycoeventos';
+    }
+    base = (base || '').replace(/\/$/, '');
+    return `${origin}${base}/lp.html?id=${eventId}`;
+  },
+
+  // Copiar link da LP do evento
   copyLPLink(eventId) {
-    const url = `${window.location.origin}/lp.html?id=${eventId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      this.showToast(`Link da LP copiado com sucesso!\n${url}`, 'success');
-    }).catch(() => {
+    const url = this.getEventLPUrl(eventId);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.showToast(`Link da LP copiado com sucesso!\n${url}`, 'success');
+      }).catch(() => {
+        prompt('Copie o link abaixo:', url);
+      });
+    } else {
       prompt('Copie o link abaixo:', url);
-    });
+    }
+  },
+
+  // Retorna a URL da Landing Page oficial do parceiro / academia
+  getPartnerLPUrl(partnerId) {
+    const origin = window.location.origin;
+    let base = window.BASE_PATH;
+    if (!base && typeof window !== 'undefined' && window.location && window.location.pathname.includes('/unycoeventos')) {
+      base = '/unycoeventos';
+    }
+    base = (base || '').replace(/\/$/, '');
+    return `${origin}${base}/lp.html?parceiro=${partnerId}`;
+  },
+
+  // Copiar link público da LP do parceiro
+  copyPartnerLPLink(partnerId) {
+    const url = this.getPartnerLPUrl(partnerId);
+    const partner = this.state.partners.find(p => p.id === partnerId);
+    const partnerName = partner ? partner.nome_fantasia : 'Parceiro';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.showToast(`Link da LP de ${partnerName} copiado com sucesso! Compartilhe com seus alunos e atletas.\n${url}`, 'success');
+      }).catch(() => {
+        prompt(`Copie o Link da LP de ${partnerName} para os alunos e atletas:`, url);
+      });
+    } else {
+      prompt(`Copie o Link da LP de ${partnerName} para os alunos e atletas:`, url);
+    }
+  },
+
+  // Copiar link a partir do formulário de parceiro
+  copyPartnerLPLinkFromModal() {
+    const input = document.getElementById('partnerLpUrlInput');
+    const url = input ? input.value : '';
+    if (!url) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.showToast('Link da LP copiado para a área de transferência!', 'success');
+      }).catch(() => {
+        prompt('Copie o Link da LP abaixo:', url);
+      });
+    } else {
+      prompt('Copie o Link da LP abaixo:', url);
+    }
+  },
+
+  // Compartilhar no WhatsApp a partir da lista
+  sharePartnerLpWhatsApp(partnerId) {
+    const partner = this.state.partners.find(p => p.id === partnerId);
+    const partnerName = partner ? partner.nome_fantasia : 'nossa academia';
+    const url = this.getPartnerLPUrl(partnerId);
+    const msg = encodeURIComponent(`Olá alunos e atletas da ${partnerName}! 🏅\n\nAcesse nosso portal oficial de eventos esportivos, inscrições e hotéis com tarifas exclusivas UNYCO:\n${url}`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  },
+
+  // Compartilhar no WhatsApp a partir do modal
+  sharePartnerLpWhatsAppFromModal() {
+    const nome = document.getElementById('partnerNomeFantasia')?.value.trim() || 'nossa academia';
+    const url = document.getElementById('partnerLpUrlInput')?.value;
+    if (!url) return;
+    const msg = encodeURIComponent(`Olá alunos e atletas da ${nome}! 🏅\n\nAcesse nosso portal oficial de eventos esportivos, inscrições e hotéis com tarifas exclusivas UNYCO:\n${url}`);
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
   },
 
   // Visualizar Lista de Inscritos de um Evento
@@ -1911,6 +2000,13 @@ window.app = {
     document.getElementById('partnerForm').reset();
     document.getElementById('partnerFormId').value = '';
     document.getElementById('partnerModalTitle').textContent = 'Cadastrar Novo Parceiro';
+
+    // Configurar seção de Link da LP
+    const notice = document.getElementById('partnerLpNewNotice');
+    const controls = document.getElementById('partnerLpActiveControls');
+    if (notice) notice.style.display = 'block';
+    if (controls) controls.style.display = 'none';
+
     this.openModal('partnerModal');
   },
 
@@ -1930,7 +2026,18 @@ window.app = {
     document.getElementById('partnerLogoUrl').value = partner.logo_url || '';
     document.getElementById('partnerWebsite').value = partner.website || '';
 
-    document.getElementById('partnerModalTitle').textContent = 'Editar Parceiro';
+    // Configurar seção de Link da LP com o link gerado
+    const notice = document.getElementById('partnerLpNewNotice');
+    const controls = document.getElementById('partnerLpActiveControls');
+    const input = document.getElementById('partnerLpUrlInput');
+    const openLink = document.getElementById('partnerLpOpenLink');
+    const lpUrl = this.getPartnerLPUrl(partner.id);
+    if (notice) notice.style.display = 'none';
+    if (controls) controls.style.display = 'block';
+    if (input) input.value = lpUrl;
+    if (openLink) openLink.href = lpUrl;
+
+    document.getElementById('partnerModalTitle').textContent = `Editar Parceiro: ${partner.nome_fantasia}`;
     this.openModal('partnerModal');
   },
 
@@ -1938,6 +2045,7 @@ window.app = {
     event.preventDefault();
 
     const id = document.getElementById('partnerFormId').value;
+    const isNew = !id;
     const payload = {
       nome_fantasia: document.getElementById('partnerNomeFantasia').value.trim(),
       razao_social: document.getElementById('partnerRazaoSocial').value.trim(),
@@ -1964,9 +2072,22 @@ window.app = {
       const json = await res.json();
 
       if (json.success) {
-        this.showToast(json.message || 'Parceiro salvo com sucesso!', 'success');
+        const savedPartner = json.data;
         this.closeModal('partnerModal');
         await this.refreshAll();
+
+        if (isNew && savedPartner && savedPartner.id) {
+          const lpUrl = this.getPartnerLPUrl(savedPartner.id);
+          this.showToast(`Parceiro cadastrado com sucesso! Link da LP ativado.`, 'success');
+          // Confirmação para copiar o link imediatamente
+          setTimeout(() => {
+            if (confirm(`Parceiro cadastrado com sucesso!\n\nDeseja copiar agora o Link da LP para enviar aos alunos e atletas da academia?\n\n${lpUrl}`)) {
+              this.copyPartnerLPLink(savedPartner.id);
+            }
+          }, 300);
+        } else {
+          this.showToast(json.message || 'Parceiro salvo com sucesso!', 'success');
+        }
       } else {
         this.showToast(json.message || 'Erro ao salvar parceiro', 'error');
       }
@@ -2190,6 +2311,28 @@ window.app = {
         <div class="info-stat-block">
           <span class="info-stat-label">Status do Parceiro</span>
           <span class="info-stat-value"><span class="partner-status-tag ${partner.status}">${partner.status === 'ativo' ? 'Ativo' : 'Inativo'}</span></span>
+        </div>
+
+        <div style="grid-column: 1 / -1; background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-md); padding: 14px 18px; margin-top: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: #0369A1; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-link"></i> Link da LP da Academia / Alunos & Atletas
+            </div>
+            <div style="font-size: 12px; color: #0284C7; font-weight: 600; margin-top: 2px;">
+              ${this.getPartnerLPUrl(partner.id)}
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-sm btn-primary" onclick="app.copyPartnerLPLink(${partner.id})" title="Copiar Link da LP">
+              <i class="fa-solid fa-copy"></i> Copiar Link
+            </button>
+            <a href="${this.getPartnerLPUrl(partner.id)}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir Landing Page">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir LP
+            </a>
+            <button class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A; background: #FFFFFF;" onclick="app.sharePartnerLpWhatsApp(${partner.id})" title="Compartilhar no WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
         </div>
       `;
 

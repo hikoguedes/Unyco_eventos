@@ -107,6 +107,11 @@ if (BASE_PATH) {
   app.get(`${BASE_PATH}/health`, healthHandler);
 }
 
+// Rota pública da Landing Page
+app.get('/lp.html', (req, res) => {
+  sendProcessedHtml(path.join(__dirname, '..', 'public', 'lp.html'), res);
+});
+
 // Rota raiz e rota do subcaminho
 if (BASE_PATH) {
   app.get(BASE_PATH, (req, res) => {
