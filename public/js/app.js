@@ -400,7 +400,7 @@ window.app = {
 
     // 1. Atualizar Widget no Topbar
     const avatar = document.getElementById('currentUserAvatar');
-    if (avatar) avatar.src = user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+    if (avatar) avatar.src = (user.avatar_url ? this.urlWithBase(user.avatar_url) : '') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
 
     const nameEl = document.getElementById('currentUserName');
     if (nameEl) nameEl.textContent = user.nome.split(' ')[0] + ' ' + (user.nome.split(' ')[1] || '');
@@ -506,7 +506,7 @@ window.app = {
         <tr>
           <td>
             <div style="display: flex; align-items: center; gap: 12px;">
-              <img src="${u.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);" alt="${this.escapeHtml(u.nome)}">
+              <img src="${(u.avatar_url ? this.urlWithBase(u.avatar_url) : '') || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);" alt="${this.escapeHtml(u.nome)}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'">
               <div>
                 <strong style="color: #0F172A; display: block; font-size: 14px;">${this.escapeHtml(u.nome)}</strong>
                 ${isSelf ? '<span style="display: inline-block; font-size: 10px; font-weight: 700; color: #BE185D; background: #FDF2F8; padding: 1px 6px; border-radius: 4px; margin-top: 2px;">Sua Conta (Você)</span>' : ''}
@@ -610,7 +610,11 @@ window.app = {
       if (ativoEl) ativoEl.checked = true;
 
       const avatarEl = document.getElementById('userAvatarUrl');
-      if (avatarEl) avatarEl.value = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+      const defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+      if (avatarEl) avatarEl.value = defaultAvatar;
+      this.updateUserAvatarPreviewFromUrl(defaultAvatar);
+      const fileInputCreate = document.getElementById('userAvatarFileInput');
+      if (fileInputCreate) fileInputCreate.value = '';
 
       this.updateUserRoleHelpText('REPRESENTANTE');
       this.openModal('userFormModal');
@@ -664,7 +668,11 @@ window.app = {
       if (cargo) cargo.value = u.cargo || '';
 
       const avatar = document.getElementById('userAvatarUrl');
+      const avatarVal = u.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
       if (avatar) avatar.value = u.avatar_url || '';
+      this.updateUserAvatarPreviewFromUrl(avatarVal);
+      const fileInputEdit = document.getElementById('userAvatarFileInput');
+      if (fileInputEdit) fileInputEdit.value = '';
 
       const ativo = document.getElementById('userAtivo');
       if (ativo) ativo.checked = u.ativo !== false;
@@ -832,6 +840,140 @@ window.app = {
       console.error('Erro ao excluir operador:', err);
       this.showToast('Erro de comunicação com o servidor.', 'error');
     }
+  },
+
+  // Atualizar preview visual do avatar a partir da URL
+  updateUserAvatarPreviewFromUrl(url) {
+    const preview = document.getElementById('userAvatarPreview');
+    const badge = document.getElementById('userAvatarStatusBadge');
+    if (!preview) return;
+
+    const defaultImg = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+    const targetUrl = (url && url.trim()) ? this.urlWithBase(url.trim()) : defaultImg;
+    preview.src = targetUrl;
+
+    if (badge) {
+      if (url && (url.startsWith('/uploads') || url.startsWith('data:image'))) {
+        badge.textContent = 'Arquivo do Computador';
+        badge.style.background = '#DCFCE7';
+        badge.style.color = '#166534';
+      } else if (url && url.startsWith('http')) {
+        badge.textContent = 'URL Externa';
+        badge.style.background = '#EFF6FF';
+        badge.style.color = '#1D4ED8';
+      } else {
+        badge.textContent = 'Avatar Padrão';
+        badge.style.background = '#F1F5F9';
+        badge.style.color = '#64748B';
+      }
+    }
+  },
+
+  // Processar arquivo de foto selecionado a partir do computador
+  async handleUserAvatarFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    // Validação de tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Por favor selecione um arquivo de imagem válido (PNG, JPG, WebP ou GIF).', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    // Validação de tamanho (máximo 8MB)
+    const maxBytes = 8 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      this.showToast('A imagem selecionada excede o limite máximo de 8MB.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    const uploadBtn = document.getElementById('btnUploadUserAvatar');
+    const preview = document.getElementById('userAvatarPreview');
+    const badge = document.getElementById('userAvatarStatusBadge');
+    const urlInput = document.getElementById('userAvatarUrl');
+
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+
+      // Exibir preview imediato na interface
+      if (preview) preview.src = dataUrl;
+
+      try {
+        // Enviar imagem ao endpoint /api/upload para salvar no servidor
+        const res = await this.apiFetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: dataUrl,
+            filename: file.name,
+            folder: 'avatars'
+          })
+        });
+
+        const json = await res.json();
+
+        if (json.success && json.url) {
+          if (urlInput) urlInput.value = json.url;
+          if (preview) preview.src = this.urlWithBase(json.url);
+          if (badge) {
+            badge.textContent = 'Arquivo do Computador';
+            badge.style.background = '#DCFCE7';
+            badge.style.color = '#166534';
+          }
+          this.showToast('Foto do computador carregada com sucesso!', 'success');
+        } else {
+          // Fallback para Base64 direto no campo
+          if (urlInput) urlInput.value = dataUrl;
+          if (badge) {
+            badge.textContent = 'Imagem Local';
+            badge.style.background = '#FEF3C7';
+            badge.style.color = '#B45309';
+          }
+          this.showToast('Imagem carregada com sucesso!', 'info');
+        }
+      } catch (err) {
+        console.warn('Fallback para Base64 local:', err);
+        if (urlInput) urlInput.value = dataUrl;
+        this.showToast('Imagem carregada localmente!', 'info');
+      } finally {
+        if (uploadBtn) {
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar do Computador';
+        }
+        event.target.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      this.showToast('Erro ao ler arquivo de imagem do computador.', 'error');
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Carregar do Computador';
+      }
+      event.target.value = '';
+    };
+
+    reader.readAsDataURL(file);
+  },
+
+  // Remover foto / reverter para avatar padrão
+  removeUserAvatar() {
+    const defaultAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+    const input = document.getElementById('userAvatarUrl');
+    const fileInput = document.getElementById('userAvatarFileInput');
+    if (input) input.value = '';
+    if (fileInput) fileInput.value = '';
+    this.updateUserAvatarPreviewFromUrl(defaultAvatar);
+    this.showToast('Foto removida. Utilizando avatar padrão.', 'info');
   },
 
   // Troca de Abas

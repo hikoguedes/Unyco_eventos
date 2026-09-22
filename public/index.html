@@ -1632,8 +1632,46 @@
           </div>
 
           <div class="form-group">
-            <label for="userAvatarUrl">URL da Foto / Avatar</label>
-            <input type="url" id="userAvatarUrl" placeholder="https://..." value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150">
+            <label for="userAvatarUrl" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 700; color: #0F172A;"><i class="fa-solid fa-image" style="color: var(--primary);"></i> Foto / Avatar do Operador</span>
+              <span id="userAvatarStatusBadge" class="badge" style="background: #EFF6FF; color: #1D4ED8; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;">URL ou Upload</span>
+            </label>
+
+            <!-- Card Interativo de Upload do Computador & Preview -->
+            <div class="avatar-upload-card" style="display: flex; gap: 14px; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-md); padding: 12px;">
+              <!-- Preview Circular da Foto -->
+              <div style="position: relative; width: 64px; height: 64px; flex-shrink: 0;">
+                <img id="userAvatarPreview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar Preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 2.5px solid #0284C7; box-shadow: 0 2px 8px rgba(0,0,0,0.08);" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'">
+                <button type="button" onclick="document.getElementById('userAvatarFileInput').click()" title="Escolher foto do computador" style="position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: #0284C7; color: #FFFFFF; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
+              </div>
+
+              <!-- Controles de Upload do Computador e Input de URL -->
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;">
+                  <!-- Input Oculto de Arquivo -->
+                  <input type="file" id="userAvatarFileInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;" onchange="app.handleUserAvatarFileUpload(event)">
+
+                  <!-- Botão Carregar do Computador -->
+                  <button type="button" class="btn btn-sm btn-primary" id="btnUploadUserAvatar" onclick="document.getElementById('userAvatarFileInput').click()" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-upload"></i> Carregar do Computador
+                  </button>
+
+                  <!-- Botão Limpar / Remover Foto -->
+                  <button type="button" id="btnRemoveUserAvatar" class="btn btn-sm btn-outline" onclick="app.removeUserAvatar()" title="Limpar foto / usar padrão" style="font-size: 11px; padding: 6px 10px; color: #EF4444; border-color: #FECACA; background: #FFFFFF;">
+                    <i class="fa-solid fa-trash"></i> Remover
+                  </button>
+                </div>
+
+                <div style="position: relative;">
+                  <input type="text" id="userAvatarUrl" placeholder="https://... ou caminho do arquivo" value="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" oninput="app.updateUserAvatarPreviewFromUrl(this.value)" style="font-size: 12px; padding: 6px 10px; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); width: 100%;">
+                </div>
+                <small style="display: block; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                  Envie uma imagem do seu computador (PNG, JPG, WebP) ou informe uma URL externa.
+                </small>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
