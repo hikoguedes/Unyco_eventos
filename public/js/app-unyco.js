@@ -1672,7 +1672,7 @@ window.app = {
               <button class="btn btn-sm btn-primary flex-1" onclick="app.copyLPLink(${e.id})" title="Copiar link público para inscrições">
                 <i class="fa-solid fa-link"></i> Link da LP
               </button>
-              <a href="/lp.html?id=${e.id}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir página pública de inscrição">
+              <a href="${this.getEventLPUrl(e.id)}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir página pública de inscrição">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
               </a>
               <button class="btn btn-sm btn-outline flex-1" onclick="app.viewEventRegistrations(${e.id})" title="Ver lista de inscritos">
