@@ -815,14 +815,57 @@ body {
   margin-bottom: 16px;
 }
 
+.partner-card-logo-wrap {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.partner-card-logo-wrap:hover .partner-logo-hover-badge {
+  opacity: 1;
+}
+
+.partner-card-logo-wrap:hover .partner-logo-img {
+  transform: scale(1.06);
+}
+
 .partner-logo-img {
-  width: 56px;
-  height: 56px;
+  width: 100%;
+  height: 100%;
   border-radius: var(--radius-md);
   object-fit: cover;
   background: #F1F5F9;
   border: 1px solid var(--border-color);
-  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+}
+
+.partner-logo-hover-badge {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.68);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  backdrop-filter: blur(2px);
+}
+
+.partner-logo-hover-badge span {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .partner-title-wrap {

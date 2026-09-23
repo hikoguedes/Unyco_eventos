@@ -36,6 +36,16 @@ window.app = {
     return url;
   },
 
+  // Helper para resolução correta de imagens (locais, uploads e remotas)
+  resolveImageUrl(url, fallback = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150') {
+    if (!url || typeof url !== 'string' || !url.trim()) return fallback;
+    const trimmed = url.trim();
+    if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return this.urlWithBase(trimmed.startsWith('/') ? trimmed : `/${trimmed}`);
+  },
+
   // Helper para requisições com autenticação RBAC
   async apiFetch(url, options = {}) {
     options.headers = options.headers || {};
@@ -849,7 +859,7 @@ window.app = {
     if (!preview) return;
 
     const defaultImg = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
-    const targetUrl = (url && url.trim()) ? this.urlWithBase(url.trim()) : defaultImg;
+    const targetUrl = this.resolveImageUrl(url, defaultImg);
     preview.src = targetUrl;
 
     if (badge) {
@@ -985,7 +995,7 @@ window.app = {
     if (!preview) return;
 
     const defaultImg = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
-    const targetUrl = (url && url.trim()) ? this.urlWithBase(url.trim()) : defaultImg;
+    const targetUrl = this.resolveImageUrl(url, defaultImg);
     preview.src = targetUrl;
 
     if (badge) {
@@ -1104,6 +1114,93 @@ window.app = {
     this.showToast('Logo removido. Utilizando padrão.', 'info');
   },
 
+  // Disparo direto de upload de imagem/logo pelo card do parceiro
+  triggerQuickPartnerLogoUpload(partnerId) {
+    let fileInput = document.getElementById('quickPartnerLogoInput');
+    if (!fileInput) {
+      fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.id = 'quickPartnerLogoInput';
+      fileInput.accept = 'image/png, image/jpeg, image/webp, image/gif, image/svg+xml';
+      fileInput.style.display = 'none';
+      document.body.appendChild(fileInput);
+    }
+
+    fileInput.onchange = async (event) => {
+      const file = event.target?.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        this.showToast('Por favor selecione um arquivo de imagem válido (PNG, JPG, SVG ou WebP).', 'error');
+        event.target.value = '';
+        return;
+      }
+
+      const maxBytes = 8 * 1024 * 1024;
+      if (file.size > maxBytes) {
+        this.showToast('A imagem selecionada excede o limite máximo de 8MB.', 'error');
+        event.target.value = '';
+        return;
+      }
+
+      const partner = this.state.partners.find(p => p.id === partnerId);
+      const partnerName = partner ? partner.nome_fantasia : 'Parceiro';
+
+      this.showToast(`Enviando nova imagem para ${partnerName}...`, 'info');
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target.result;
+        try {
+          const res = await this.apiFetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image: dataUrl,
+              filename: file.name,
+              folder: 'partners'
+            })
+          });
+
+          const json = await res.json();
+          const newLogoUrl = (json.success && json.url) ? json.url : dataUrl;
+
+          // Salvar no backend via PUT /api/partners/:id
+          const saveRes = await this.apiFetch(`/api/partners/${partnerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ logo_url: newLogoUrl })
+          });
+
+          const saveJson = await saveRes.json();
+          if (saveJson.success) {
+            if (partner) {
+              partner.logo_url = saveJson.data?.logo_url || newLogoUrl;
+            }
+            this.renderPartners();
+            this.showToast(`Imagem do parceiro "${partnerName}" atualizada com sucesso!`, 'success');
+          } else {
+            this.showToast(saveJson.message || 'Erro ao atualizar imagem do parceiro', 'error');
+          }
+        } catch (err) {
+          console.error('Erro ao atualizar imagem do parceiro:', err);
+          this.showToast('Erro ao enviar imagem. Verifique a conexão com o servidor.', 'error');
+        } finally {
+          event.target.value = '';
+        }
+      };
+
+      reader.onerror = () => {
+        this.showToast('Erro ao ler arquivo da imagem.', 'error');
+        event.target.value = '';
+      };
+
+      reader.readAsDataURL(file);
+    };
+
+    fileInput.click();
+  },
+
   // ==========================================================
   // HELPERS DE UPLOAD DE BANNER DO EVENTO
   // ==========================================================
@@ -1113,7 +1210,7 @@ window.app = {
     if (!preview) return;
 
     const defaultImg = 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600';
-    const targetUrl = (url && url.trim()) ? this.urlWithBase(url.trim()) : defaultImg;
+    const targetUrl = this.resolveImageUrl(url, defaultImg);
     preview.src = targetUrl;
 
     if (badge) {
@@ -1517,7 +1614,13 @@ window.app = {
     container.innerHTML = list.map(p => `
       <div class="partner-card">
         <div class="partner-card-header">
-          <img class="partner-logo-img" src="${p.logo_url || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150'}" alt="${this.escapeHtml(p.nome_fantasia)}" onerror="this.src='https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150'">
+          <div class="partner-card-logo-wrap" onclick="app.triggerQuickPartnerLogoUpload(${p.id})" title="Clique para alterar a imagem de ${this.escapeHtml(p.nome_fantasia)}">
+            <img class="partner-logo-img" src="${this.resolveImageUrl(p.logo_url)}" alt="${this.escapeHtml(p.nome_fantasia)}" onerror="this.src='https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150'">
+            <div class="partner-logo-hover-badge" title="Trocar imagem do parceiro">
+              <i class="fa-solid fa-camera"></i>
+              <span>Trocar</span>
+            </div>
+          </div>
           <div class="partner-title-wrap">
             <h3 class="partner-name">${this.escapeHtml(p.nome_fantasia)}</h3>
             <span class="partner-category-badge">${this.escapeHtml(p.categoria || 'Clube')}</span>
@@ -1554,6 +1657,9 @@ window.app = {
             <i class="fa-solid fa-calendar-days"></i> Ver Eventos (${p.total_eventos || 0})
           </button>
           <div style="display: flex; gap: 6px;">
+            <button class="btn btn-sm btn-secondary" onclick="app.triggerQuickPartnerLogoUpload(${p.id})" title="Alterar Imagem / Logo do Parceiro">
+              <i class="fa-solid fa-camera"></i>
+            </button>
             <button class="btn btn-sm btn-secondary" onclick="app.openCreateProposalModal(${p.id})" title="Criar Proposta Comercial para este Parceiro">
               <i class="fa-solid fa-file-signature"></i>
             </button>
@@ -1622,7 +1728,7 @@ window.app = {
                           e.status === 'Em Andamento' ? 'status-emandamento' :
                           e.status === 'Concluído' ? 'status-concluido' : 'status-cancelado';
 
-      const banner = e.banner_url || 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600&auto=format&fit=crop&q=80';
+      const banner = this.resolveImageUrl(e.banner_url, 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600&auto=format&fit=crop&q=80');
       const categoryColor = e.categoria_cor || '#0284C7';
       const categoryIcon = e.categoria_icone || 'fa-trophy';
       const totalInscritos = e.total_inscritos || 0;
@@ -1642,7 +1748,7 @@ window.app = {
 
           <div class="event-content">
             <div class="event-partner-info" onclick="app.viewPartnerDetails(${e.parceiro_id})" style="cursor: pointer;">
-              <img class="event-partner-avatar" src="${e.parceiro_logo || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=50'}" alt="${this.escapeHtml(e.parceiro_nome)}" onerror="this.src='https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=50'">
+              <img class="event-partner-avatar" src="${this.resolveImageUrl(e.parceiro_logo, 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=50')}" alt="${this.escapeHtml(e.parceiro_nome)}" onerror="this.src='https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=50'">
               <span class="event-partner-title">${this.escapeHtml(e.parceiro_nome)}</span>
             </div>
 
@@ -2917,7 +3023,7 @@ window.app = {
 
       const logoContainer = document.getElementById('partnerDetailsLogoContainer');
       if (partner.logo_url) {
-        logoContainer.innerHTML = `<img src="${partner.logo_url}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;" onerror="this.outerHTML='<i class=\\\'fa-solid fa-building\\\'></i>'">`;
+        logoContainer.innerHTML = `<img src="${this.resolveImageUrl(partner.logo_url)}" style="width: 100%; height: 100%; border-radius: 8px; object-fit: cover;" onerror="this.outerHTML='<i class=\\\'fa-solid fa-building\\\'></i>'">`;
       } else {
         logoContainer.innerHTML = `<i class="fa-solid fa-building"></i>`;
       }
@@ -3085,7 +3191,7 @@ window.app = {
         <tr>
           <td>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <img src="${p.parceiro_logo || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=60'}" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
+              <img src="${this.resolveImageUrl(p.parceiro_logo, 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=60')}" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
               <div>
                 <strong style="color: #0F172A; display: block;">${this.escapeHtml(p.parceiro_nome)}</strong>
                 <small style="color: var(--text-muted);">${this.escapeHtml(p.parceiro_categoria || 'Parceiro')}</small>

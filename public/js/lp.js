@@ -46,6 +46,15 @@ const lp = {
     return url;
   },
 
+  resolveImageUrl(url, fallback = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150') {
+    if (!url || typeof url !== 'string' || !url.trim()) return fallback;
+    const trimmed = url.trim();
+    if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return this.urlWithBase(trimmed.startsWith('/') ? trimmed : `/${trimmed}`);
+  },
+
   escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -140,7 +149,7 @@ const lp = {
     // Top Header do Parceiro
     const logoImg = document.getElementById('hubPartnerLogo');
     if (logoImg) {
-      logoImg.src = p.logo_url || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+      logoImg.src = this.resolveImageUrl(p.logo_url);
       logoImg.onerror = () => { logoImg.src = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150'; };
     }
 
@@ -192,7 +201,7 @@ const lp = {
         return `
           <div class="hub-event-card">
             <div class="hub-event-banner-wrap">
-              <img class="hub-event-banner" src="${e.banner_url || 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'}" alt="${this.escapeHtml(e.nome)}" onerror="this.src='https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'">
+              <img class="hub-event-banner" src="${this.resolveImageUrl(e.banner_url, 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600')}" alt="${this.escapeHtml(e.nome)}" onerror="this.src='https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'">
               <span class="event-status-badge ${e.status === 'Agendado' ? 'status-agendado' : 'status-emandamento'}" style="position: absolute; top: 12px; right: 12px;">${e.status}</span>
             </div>
             <div class="hub-event-content">
@@ -301,7 +310,7 @@ const lp = {
     document.getElementById('lpContent').style.display = 'grid';
 
     // Banner & Título
-    document.getElementById('lpEventBanner').src = ev.banner_url || 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800';
+    document.getElementById('lpEventBanner').src = this.resolveImageUrl(ev.banner_url, 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800');
     document.getElementById('lpEventTitle').textContent = ev.nome;
 
     // Categoria
@@ -324,11 +333,7 @@ const lp = {
     // Parceiro
     document.getElementById('lpPartnerName').textContent = ev.parceiro_nome;
     const partnerLogo = document.getElementById('lpPartnerLogo');
-    if (ev.parceiro_logo) {
-      partnerLogo.src = ev.parceiro_logo;
-    } else {
-      partnerLogo.src = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=100';
-    }
+    partnerLogo.src = this.resolveImageUrl(ev.parceiro_logo, 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=100');
 
     // Preço
     const priceSpan = document.getElementById('lpEventPrice');
