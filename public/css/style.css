@@ -1311,6 +1311,16 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes modalShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-7px); }
+  40%, 80% { transform: translateX(7px); }
+}
+
+.modal-dialog.shake {
+  animation: modalShake 0.35s ease-in-out !important;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

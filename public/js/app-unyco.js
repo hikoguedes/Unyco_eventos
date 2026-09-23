@@ -174,11 +174,47 @@ window.app = {
       }
     });
 
-    // Fechar modal ao clicar fora da caixa
+    // Prevenir submissão acidental por ENTER nos inputs dos formulários
+    ['partnerForm', 'eventForm', 'userForm', 'proposalForm', 'categoryForm', 'hotelForm'].forEach(formId => {
+      document.getElementById(formId)?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'submit') {
+          e.preventDefault();
+        }
+      });
+    });
+
+    // Controle seguro de clique fora da caixa do modal
+    // Formulários com dados NUNCA fecham acidentalmente por clique no backdrop!
+    const formModalIds = ['partnerModal', 'eventModal', 'userFormModal', 'proposalModal', 'categoryModal', 'hotelModal'];
+
     document.querySelectorAll('.modal-backdrop').forEach(modal => {
+      let mousedownTarget = null;
+      modal.addEventListener('mousedown', (e) => {
+        mousedownTarget = e.target;
+      });
+
+      const dialog = modal.querySelector('.modal-dialog');
+      if (dialog) {
+        dialog.addEventListener('click', (e) => e.stopPropagation());
+      }
+
       modal.addEventListener('click', (e) => {
+        // Se o clique começou dentro do diálogo (ex: arrastando para selecionar texto), não fecha!
+        if (mousedownTarget !== modal) return;
+
         if (e.target === modal) {
-          this.closeModal(modal.id);
+          if (formModalIds.includes(modal.id)) {
+            // Em formulários de edição: NÃO fecha acidentalmente! Dá feedback visual de shake
+            if (dialog) {
+              dialog.classList.remove('shake');
+              void dialog.offsetWidth; // Força reflow para reiniciar animação
+              dialog.classList.add('shake');
+              setTimeout(() => dialog.classList.remove('shake'), 400);
+            }
+          } else {
+            // Modais de visualização/leitura fecham normalmente
+            this.closeModal(modal.id);
+          }
         }
       });
     });
@@ -2746,7 +2782,17 @@ window.app = {
     document.getElementById('partnerEmail').value = partner.email || '';
     document.getElementById('partnerTelefone').value = partner.telefone || '';
     document.getElementById('partnerResponsavel').value = partner.responsavel || '';
-    document.getElementById('partnerCategoria').value = partner.categoria || 'Promotor';
+    const catSelect = document.getElementById('partnerCategoria');
+    if (catSelect) {
+      catSelect.value = partner.categoria || 'Promotor';
+      if (!catSelect.value && partner.categoria) {
+        const opt = document.createElement('option');
+        opt.value = partner.categoria;
+        opt.textContent = partner.categoria;
+        catSelect.appendChild(opt);
+        catSelect.value = partner.categoria;
+      }
+    }
     document.getElementById('partnerStatus').value = partner.status || 'ativo';
     document.getElementById('partnerLogoUrl').value = partner.logo_url || '';
     document.getElementById('partnerWebsite').value = partner.website || '';
