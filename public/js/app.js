@@ -2774,6 +2774,9 @@ window.app = {
   async handleSavePartner(event) {
     event.preventDefault();
 
+    const saveBtn = document.getElementById('btnSavePartner');
+    const originalBtnHtml = saveBtn ? saveBtn.innerHTML : '';
+
     const id = document.getElementById('partnerFormId').value;
     const isNew = !id;
     const payload = {
@@ -2788,6 +2791,11 @@ window.app = {
       logo_url: document.getElementById('partnerLogoUrl').value.trim(),
       website: document.getElementById('partnerWebsite').value.trim(),
     };
+
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+    }
 
     try {
       const url = id ? `/api/partners/${id}` : '/api/partners';
@@ -2823,7 +2831,12 @@ window.app = {
       }
     } catch (err) {
       console.error('Erro ao salvar parceiro:', err);
-      this.showToast('Erro ao comunicar com o servidor', 'error');
+      this.showToast('Erro ao comunicar com o servidor: ' + (err.message || err), 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalBtnHtml;
+      }
     }
   },
 

@@ -152,9 +152,20 @@ exports.createPartner = async (req, res) => {
       website
     } = req.body;
 
-    if (!nome_fantasia) {
+    const cleanNome = (nome_fantasia || '').trim();
+    if (!cleanNome) {
       return res.status(400).json({ success: false, message: 'O campo Nome Fantasia é obrigatório' });
     }
+
+    const cleanCnpj = cnpj ? String(cnpj).trim() : null;
+    const cleanEmail = email ? String(email).trim() : null;
+    const cleanTelefone = telefone ? String(telefone).trim() : null;
+    const cleanRazaoSocial = razao_social ? String(razao_social).trim() : null;
+    const cleanResponsavel = responsavel ? String(responsavel).trim() : null;
+    const cleanCategoria = categoria ? String(categoria).trim() : 'Promotor';
+    const cleanStatus = (status && status.toLowerCase() === 'inativo') ? 'inativo' : 'ativo';
+    const cleanLogoUrl = logo_url ? String(logo_url).trim() : null;
+    const cleanWebsite = website ? String(website).trim() : null;
 
     const queryText = `
       INSERT INTO parceiros (
@@ -166,16 +177,16 @@ exports.createPartner = async (req, res) => {
     `;
 
     const values = [
-      nome_fantasia,
-      razao_social || null,
-      cnpj || null,
-      email || null,
-      telefone || null,
-      responsavel || null,
-      categoria || 'Clube',
-      status || 'ativo',
-      logo_url || null,
-      website || null
+      cleanNome,
+      cleanRazaoSocial || null,
+      cleanCnpj || null,
+      cleanEmail || null,
+      cleanTelefone || null,
+      cleanResponsavel || null,
+      cleanCategoria || 'Promotor',
+      cleanStatus,
+      cleanLogoUrl || null,
+      cleanWebsite || null
     ];
 
     const result = await db.query(queryText, values);
@@ -189,7 +200,10 @@ exports.createPartner = async (req, res) => {
     if (error.code === '23505') { // Unique constraint violation (CNPJ)
       return res.status(400).json({ success: false, message: 'Já existe um parceiro cadastrado com este CNPJ' });
     }
-    return res.status(500).json({ success: false, message: 'Erro ao cadastrar parceiro', error: error.message });
+    if (error.code === '22001') { // String too long
+      return res.status(400).json({ success: false, message: 'Um dos campos informados excede o limite de caracteres.' });
+    }
+    return res.status(500).json({ success: false, message: `Erro ao cadastrar parceiro: ${error.message}`, error: error.message });
   }
 };
 
@@ -210,6 +224,17 @@ exports.updatePartner = async (req, res) => {
       website
     } = req.body;
 
+    const cleanCnpj = cnpj !== undefined ? (String(cnpj).trim() || null) : undefined;
+    const cleanEmail = email !== undefined ? (String(email).trim() || null) : undefined;
+    const cleanTelefone = telefone !== undefined ? (String(telefone).trim() || null) : undefined;
+    const cleanRazaoSocial = razao_social !== undefined ? (String(razao_social).trim() || null) : undefined;
+    const cleanResponsavel = responsavel !== undefined ? (String(responsavel).trim() || null) : undefined;
+    const cleanNome = nome_fantasia !== undefined ? String(nome_fantasia).trim() : undefined;
+    const cleanCategoria = categoria !== undefined ? String(categoria).trim() : undefined;
+    const cleanStatus = status !== undefined ? String(status).trim() : undefined;
+    const cleanLogoUrl = logo_url !== undefined ? (String(logo_url).trim() || null) : undefined;
+    const cleanWebsite = website !== undefined ? (String(website).trim() || null) : undefined;
+
     const queryText = `
       UPDATE parceiros
       SET 
@@ -228,16 +253,16 @@ exports.updatePartner = async (req, res) => {
     `;
 
     const values = [
-      nome_fantasia,
-      razao_social,
-      cnpj,
-      email,
-      telefone,
-      responsavel,
-      categoria,
-      status,
-      logo_url,
-      website,
+      cleanNome,
+      cleanRazaoSocial,
+      cleanCnpj,
+      cleanEmail,
+      cleanTelefone,
+      cleanResponsavel,
+      cleanCategoria,
+      cleanStatus,
+      cleanLogoUrl,
+      cleanWebsite,
       id
     ];
 
@@ -255,9 +280,12 @@ exports.updatePartner = async (req, res) => {
   } catch (error) {
     console.error('Erro ao atualizar parceiro:', error);
     if (error.code === '23505') {
-      return res.status(400).json({ success: false, message: 'Este CNPJ já está sendo utilizado por outro parceiro' });
+      return res.status(400).json({ success: false, message: 'Já existe um parceiro com este CNPJ cadastrado' });
     }
-    return res.status(500).json({ success: false, message: 'Erro ao atualizar parceiro', error: error.message });
+    if (error.code === '22001') {
+      return res.status(400).json({ success: false, message: 'Um dos campos informados excede o limite de caracteres.' });
+    }
+    return res.status(500).json({ success: false, message: `Erro ao atualizar parceiro: ${error.message}`, error: error.message });
   }
 };
 
