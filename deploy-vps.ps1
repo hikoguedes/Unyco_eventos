@@ -22,45 +22,15 @@ git push origin main
 Write-Host "   -> Git sincronizado com sucesso no GitHub." -ForegroundColor Green
 Write-Host ""
 
-# 2. Comandos que serão executados remotamente na VPS
-$RemoteCommands = @"
-set -e
-echo '=== [VPS] Atualizando UNYCO Esporte ==='
-mkdir -p $APP_DIR
-cd $APP_DIR
-
-if [ -d "$APP_DIR/.git" ]; then
-    echo '-> Puxando alteracoes do Git...'
-    git fetch origin main
-    git reset --hard origin/main
-else
-    echo '-> Clonando repositorio...'
-    git clone https://github.com/hikoguedes/Unyco_eventos.git .
-fi
-
-echo '-> Criando diretorios de upload...'
-mkdir -p public/uploads/partners public/uploads/events public/uploads/avatars
-
-echo '-> Instalando dependencias...'
-npm install --omit=dev --legacy-peer-deps 2>&1 | tail -5
-
-echo '-> Aplicando migracoes no banco PostgreSQL...'
-sudo -u postgres psql unyco_eventos_db -c "ALTER TABLE inscricoes_evento ADD COLUMN IF NOT EXISTS parceiro_indicador_id INTEGER REFERENCES parceiros(id);" 2>/dev/null || true
-sudo -u postgres psql unyco_eventos_db -c "ALTER TABLE inscricoes_evento ADD COLUMN IF NOT EXISTS origem_inscricao VARCHAR(50) DEFAULT 'ORGANICO';" 2>/dev/null || true
-
-echo '-> Reiniciando aplicacao no PM2...'
-pm2 restart unyco-eventos || pm2 start src/server.js --name unyco-eventos --env production
-pm2 save
-
-echo '=== [VPS] Deploy finalizado com sucesso! ==='
-"@
+# 2. Comando único de atualização remota na VPS
+$RemoteCmd = "cd $APP_DIR && git fetch origin main && git reset --hard origin/main && mkdir -p public/uploads/partners public/uploads/events public/uploads/avatars && npm install --omit=dev --legacy-peer-deps && sudo -u postgres psql unyco_eventos_db -c 'ALTER TABLE inscricoes_evento ADD COLUMN IF NOT EXISTS parceiro_indicador_id INTEGER REFERENCES parceiros(id);' 2>/dev/null && sudo -u postgres psql unyco_eventos_db -c 'ALTER TABLE inscricoes_evento ADD COLUMN IF NOT EXISTS origem_inscricao VARCHAR(50) DEFAULT ''ORGANICO'';' 2>/dev/null && pm2 restart unyco-eventos"
 
 # 3. Execução via SSH
 Write-Host "[2/3] Conectando à VPS via SSH na porta $VPS_PORT..." -ForegroundColor Yellow
-Write-Host "(Se solicitado, digite a senha de root do servidor)" -ForegroundColor Gray
+Write-Host "(Se solicitado, digite a senha de root da VPS e tecle Enter)" -ForegroundColor Gray
 Write-Host ""
 
-ssh -p $VPS_PORT -o StrictHostKeyChecking=accept-new ${VPS_USER}@${VPS_HOST} $RemoteCommands
+ssh -p $VPS_PORT -o StrictHostKeyChecking=accept-new "${VPS_USER}@${VPS_HOST}" $RemoteCmd
 
 Write-Host ""
 Write-Host "[3/3] Verificando saúde da aplicação em produção..." -ForegroundColor Yellow
