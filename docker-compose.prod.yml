@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unyco_eventos_app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3070:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - BASE_PATH=/unycoeventos
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=unyco_eventos_db
+      - DB_USER=unyco_user
+      - DB_PASSWORD=unyco_secret_pass_vps_2026
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - default
+      - unyco_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: unyco_eventos_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=unyco_eventos_db
+      - POSTGRES_USER=unyco_user
+      - POSTGRES_PASSWORD=unyco_secret_pass_vps_2026
+      - TZ=America/Sao_Paulo
+    volumes:
+      - unyco_eventos_pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/01_init.sql
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unyco_user -d unyco_eventos_db"]
+      interval: 4s
+      timeout: 4s
+      retries: 5
+
+networks:
+  default:
+  unyco_network:
+    external: true
+    name: unyco_unyco_wooba_airb_network
+
+volumes:
+  unyco_eventos_pg_data:
