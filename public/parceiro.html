@@ -845,6 +845,122 @@
     </div>
   </div>
 
+  <!-- ========================================================== -->
+  <!-- MODAL: INSCRIÇÃO DIRETA DE ALUNO / INDICAÇÃO PELO PARCEIRO -->
+  <!-- ========================================================== -->
+  <div id="enrollModal" class="login-modal-backdrop" style="display: none; z-index: 10000;">
+    <div class="login-modal-box" style="max-width: 660px; text-align: left; padding: 24px;">
+      <div class="login-modal-header" style="text-align: left; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div class="login-icon-circle" style="width: 46px; height: 46px; font-size: 20px; margin: 0; background: #DCFCE7; color: #166534;"><i class="fa-solid fa-user-plus"></i></div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0;">Inscrever Aluno / Nova Indicação</h3>
+            <p style="font-size: 12px; color: #64748B; margin: 2px 0 0 0;">Cadastre um atleta ou aluno diretamente na sua carteira de parceiro.</p>
+          </div>
+        </div>
+        <button type="button" onclick="portal.closeEnrollModal()" style="background: none; border: none; font-size: 24px; color: #94A3B8; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <form id="partnerEnrollForm" onsubmit="portal.submitPartnerEnrollment(event)">
+        <!-- Seleção do Evento -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="enrollEventSelect"><i class="fa-solid fa-calendar-check" style="color: #0284C7;"></i> Selecione o Evento Esportivo *</label>
+          <select id="enrollEventSelect" class="form-control" required onchange="portal.handleEnrollEventChange(this.value)">
+            <option value="">Selecione o evento...</option>
+          </select>
+          <small id="enrollEventPriceNotice" style="display: block; font-size: 11.5px; color: #059669; font-weight: 700; margin-top: 5px;"></small>
+        </div>
+
+        <!-- Nome Completo -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="enrollNome">Nome Completo do Aluno / Participante *</label>
+          <input type="text" id="enrollNome" class="form-control" required placeholder="Ex: Lucas Gabriel Silveira">
+        </div>
+
+        <!-- CPF e Data de Nascimento -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="enrollCpf">CPF *</label>
+            <input type="text" id="enrollCpf" class="form-control" required placeholder="000.000.000-00">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="enrollNascimento">Data de Nascimento</label>
+            <input type="date" id="enrollNascimento" class="form-control">
+          </div>
+        </div>
+
+        <!-- E-mail e WhatsApp -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="enrollEmail">E-mail do Participante *</label>
+            <input type="email" id="enrollEmail" class="form-control" required placeholder="aluno@email.com">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="enrollTelefone">WhatsApp / Telefone *</label>
+            <input type="text" id="enrollTelefone" class="form-control" required placeholder="(11) 99999-9999">
+          </div>
+        </div>
+
+        <!-- Gênero e Tamanho da Camiseta -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="enrollGenero">Gênero</label>
+            <select id="enrollGenero" class="form-control">
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Outro">Outro / Não informar</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="enrollCamiseta">Tamanho da Camiseta / Kit</label>
+            <select id="enrollCamiseta" class="form-control">
+              <option value="P">P (Pequeno)</option>
+              <option value="M" selected>M (Médio)</option>
+              <option value="G">G (Grande)</option>
+              <option value="GG">GG (Extra Grande)</option>
+              <option value="XG">XG (Especial)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Opção de Hospedagem Curada UNYCO -->
+        <div style="background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 18px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0369A1; cursor: pointer; margin-bottom: 6px;">
+            <input type="checkbox" id="enrollHospedagemCheck" onchange="portal.toggleEnrollHotelFields(this.checked)">
+            <span><i class="fa-solid fa-hotel"></i> Incluir solicitação de reserva de Hotel com desconto oficial</span>
+          </label>
+          <div id="enrollHotelFields" style="display: none; margin-top: 10px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+              <div>
+                <label for="enrollHotelSelect" style="font-size: 11px; color: #334155; font-weight: 700; display: block; margin-bottom: 4px;">Hotel Credenciado</label>
+                <select id="enrollHotelSelect" class="form-control" style="font-size: 12px; padding: 8px;">
+                  <option value="">Qualquer hotel credenciado com desconto</option>
+                </select>
+              </div>
+              <div>
+                <label for="enrollHospedesQtd" style="font-size: 11px; color: #334155; font-weight: 700; display: block; margin-bottom: 4px;">Qtd Hóspedes</label>
+                <select id="enrollHospedesQtd" class="form-control" style="font-size: 12px; padding: 8px;">
+                  <option value="1">1 Hóspede</option>
+                  <option value="2" selected>2 Hóspedes</option>
+                  <option value="3">3 Hóspedes</option>
+                  <option value="4">4 Hóspedes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ações do Modal -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #E2E8F0; padding-top: 14px;">
+          <button type="button" class="btn btn-secondary" onclick="portal.closeEnrollModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitEnroll" style="font-weight: 700;">
+            <i class="fa-solid fa-check"></i> Concluir Inscrição
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- BARRA SUPERIOR -->
   <header class="portal-nav">
     <div class="portal-nav-inner">
@@ -856,6 +972,9 @@
         </div>
       </div>
       <div class="nav-actions">
+        <button class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" title="Inscrever Novo Aluno / Indicação" style="background: #10B981; border-color: #10B981; color: #FFFFFF; font-weight: 700;">
+          <i class="fa-solid fa-user-plus"></i> <span class="hide-mobile">+ Inscrever Aluno</span>
+        </button>
         <button class="btn btn-sm btn-secondary" onclick="portal.copyReferralLink()" title="Copiar Link da Carteira / Indicação">
           <i class="fa-solid fa-link"></i> <span class="hide-mobile">Copiar Link</span>
         </button>
@@ -1016,13 +1135,18 @@
     <!-- ABA 2: INSCRIÇÕES DE ATLETAS -->
     <div id="tab-inscricoes" class="tab-pane">
       <div class="content-box">
-        <div class="content-box-header">
-          <div class="content-box-title">
-            <i class="fa-solid fa-users" style="color: #10B981;"></i> Atletas e Alunos Inscritos pelo seu Link
+        <div class="content-box-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div class="content-box-title">
+              <i class="fa-solid fa-users" style="color: #10B981;"></i> Atletas e Alunos Inscritos
+            </div>
+            <span style="font-size: 12px; color: var(--text-muted);">
+              Inscrições realizadas pelos seus links de divulgação ou cadastradas diretamente por você
+            </span>
           </div>
-          <span style="font-size: 12px; color: var(--text-muted);">
-            Inscrições vinculadas diretamente à sua Carteira de Parceiro
-          </span>
+          <button type="button" class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #10B981; border-color: #10B981;">
+            <i class="fa-solid fa-user-plus"></i> + Inscrever Aluno / Indicação
+          </button>
         </div>
 
         <div class="table-responsive">
@@ -1609,9 +1733,14 @@
                   </div>
                 </div>
 
-                <a href="${base}/lp.html?carteira=${this.data.partner.id}" target="_blank" class="btn btn-sm btn-primary" style="width: 100%; justify-content: center;">
-                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Página Pública de Inscrição
-                </a>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <button type="button" class="btn btn-sm btn-primary" onclick="portal.openEnrollModal(${e.id})" style="flex: 1; justify-content: center; background: #10B981; border-color: #10B981; font-weight: 700;" title="Inscrever Aluno Diretamente">
+                    <i class="fa-solid fa-user-plus"></i> Inscrever Aluno
+                  </button>
+                  <a href="${base}/lp.html?carteira=${this.data.partner.id}" target="_blank" class="btn btn-sm btn-secondary" style="justify-content: center;" title="Abrir Landing Page">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Link
+                  </a>
+                </div>
               </div>
             </div>
           `;
@@ -1692,6 +1821,169 @@
         const url = `${window.location.origin}${base}/lp.html?carteira=${p.id}`;
         const text = encodeURIComponent(`Olá! Faça sua inscrição oficial e garanta descontos exclusivos de hospedagem nos eventos da ${p.nome_fantasia} através do link oficial:\n\n${url}`);
         window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+      },
+
+      openEnrollModal(preselectedEventId = null) {
+        if (!this.data || !this.data.events || this.data.events.length === 0) {
+          this.showToast('Nenhum evento esportivo disponível para inscrição no momento.', 'error');
+          return;
+        }
+
+        const select = document.getElementById('enrollEventSelect');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">Selecione o evento esportivo...</option>' + 
+          this.data.events.map(e => `
+            <option value="${e.id}" ${preselectedEventId && parseInt(preselectedEventId, 10) === e.id ? 'selected' : ''}>
+              ${this.escapeHtml(e.nome)} (${this.escapeHtml(e.modalidade || 'Competição')} - R$ ${parseFloat(e.valor_inscricao || 0).toFixed(2)})
+            </option>
+          `).join('');
+
+        // Se tiver apenas 1 evento e nenhum pré-selecionado, já seleciona ele
+        if (!preselectedEventId && this.data.events.length === 1) {
+          select.value = this.data.events[0].id;
+        }
+
+        // Limpar campos
+        document.getElementById('enrollNome').value = '';
+        document.getElementById('enrollCpf').value = '';
+        document.getElementById('enrollNascimento').value = '';
+        document.getElementById('enrollEmail').value = '';
+        document.getElementById('enrollTelefone').value = '';
+        document.getElementById('enrollGenero').value = 'Masculino';
+        document.getElementById('enrollCamiseta').value = 'M';
+        
+        const checkHosp = document.getElementById('enrollHospedagemCheck');
+        if (checkHosp) checkHosp.checked = false;
+        this.toggleEnrollHotelFields(false);
+
+        // Atualizar hotéis e aviso de preço
+        this.handleEnrollEventChange(select.value);
+
+        document.getElementById('enrollModal').style.display = 'flex';
+      },
+
+      closeEnrollModal() {
+        document.getElementById('enrollModal').style.display = 'none';
+      },
+
+      handleEnrollEventChange(eventId) {
+        const notice = document.getElementById('enrollEventPriceNotice');
+        const hotelSelect = document.getElementById('enrollHotelSelect');
+
+        if (!eventId || !this.data || !this.data.events) {
+          if (notice) notice.textContent = '';
+          if (hotelSelect) hotelSelect.innerHTML = '<option value="">Qualquer hotel credenciado com desconto</option>';
+          return;
+        }
+
+        const ev = this.data.events.find(e => e.id === parseInt(eventId, 10));
+        if (!ev) return;
+
+        const val = parseFloat(ev.valor_inscricao || 0);
+        const pct = parseFloat(this.data.partner.comissao_inscricao_pct || 10);
+        const comissao = (val * (pct / 100)).toFixed(2);
+
+        if (notice) {
+          notice.innerHTML = `
+            <i class="fa-solid fa-circle-check"></i> Inscrição: <strong>R$ ${val.toFixed(2).replace('.', ',')}</strong> • 
+            Sua comissão gerada nesta inscrição: <strong style="color: #15803D;">R$ ${comissao.replace('.', ',')} (${pct.toFixed(0)}%)</strong>
+          `;
+        }
+
+        if (hotelSelect) {
+          const hotels = ev.hoteis_vinculados || [];
+          if (hotels.length > 0) {
+            hotelSelect.innerHTML = '<option value="">Selecione um hotel com desconto curado (ou qualquer hotel)</option>' +
+              hotels.map(h => `
+                <option value="${h.hotel_id}">
+                  ${this.escapeHtml(h.hotel_nome)} - Diária Atleta: R$ ${parseFloat(h.tarifa_atleta_desconto || 0).toFixed(2)}
+                </option>
+              `).join('');
+          } else {
+            hotelSelect.innerHTML = '<option value="">Qualquer hotel credenciado UNYCO com desconto</option>';
+          }
+        }
+      },
+
+      toggleEnrollHotelFields(checked) {
+        const box = document.getElementById('enrollHotelFields');
+        if (box) {
+          box.style.display = checked ? 'block' : 'none';
+        }
+      },
+
+      async submitPartnerEnrollment(event) {
+        event.preventDefault();
+        const eventId = document.getElementById('enrollEventSelect').value;
+        const nome = document.getElementById('enrollNome').value.trim();
+        const cpf = document.getElementById('enrollCpf').value.trim();
+        const nascimento = document.getElementById('enrollNascimento').value;
+        const email = document.getElementById('enrollEmail').value.trim();
+        const telefone = document.getElementById('enrollTelefone').value.trim();
+        const genero = document.getElementById('enrollGenero').value;
+        const camiseta = document.getElementById('enrollCamiseta').value;
+        const checkHosp = document.getElementById('enrollHospedagemCheck').checked;
+        const hotelId = document.getElementById('enrollHotelSelect')?.value;
+        const hospedesQtd = document.getElementById('enrollHospedesQtd')?.value;
+
+        if (!eventId) {
+          this.showToast('Selecione o evento esportivo para a inscrição.', 'error');
+          return;
+        }
+        if (!nome || !cpf || !email || !telefone) {
+          this.showToast('Preencha os campos obrigatórios (Nome, CPF, E-mail e WhatsApp).', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('btnSubmitEnroll');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando Inscrição...';
+
+        try {
+          const payload = {
+            nome_completo: nome,
+            cpf: cpf,
+            email: email,
+            telefone: telefone,
+            data_nascimento: nascimento || null,
+            genero: genero,
+            tamanho_camiseta: camiseta,
+            precisa_hospedagem: checkHosp,
+            hospedagem_hotel_id: checkHosp && hotelId ? parseInt(hotelId, 10) : null,
+            hospedagem_qtd_pessoas: checkHosp ? parseInt(hospedesQtd || 1, 10) : 1,
+            parceiro_indicador_id: this.partnerId,
+            origem_inscricao: 'CADASTRO_DIRETO_PARCEIRO'
+          };
+
+          const res = await fetch(this.urlWithBase(`/api/events/${eventId}/registrations`), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const json = await res.json();
+
+          if (json.success) {
+            this.closeEnrollModal();
+            const cod = json.data?.codigo_inscricao || 'CONFIRMADA';
+            this.showToast(`Inscrição do aluno "${nome}" realizada com sucesso! Código: ${cod}`, 'success');
+            
+            // Recarrega todos os dados do portal para atualizar na hora os KPIs e tabelas
+            await this.loadPortalData();
+            
+            // Alterna para a aba de inscrições para ver o aluno cadastrado
+            this.switchTab('tab-inscricoes');
+          } else {
+            this.showToast(json.message || 'Erro ao realizar inscrição.', 'error');
+          }
+        } catch (err) {
+          console.error('Erro na inscrição do parceiro:', err);
+          this.showToast('Erro ao comunicar com o servidor. Tente novamente.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> Concluir Inscrição';
+        }
       },
 
       showToast(message, type = 'info') {

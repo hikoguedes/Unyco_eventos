@@ -144,7 +144,7 @@ exports.registerForEvent = async (req, res) => {
 
         const leadValues = [
           evento_id,
-          eventData.parceiro_id,
+          finalParceiroIndicadorId || eventData.parceiro_id,
           hospedagem_hotel_id || null,
           registration.id,
           nome_completo.trim(),
