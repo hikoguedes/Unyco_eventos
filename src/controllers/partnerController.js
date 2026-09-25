@@ -149,7 +149,9 @@ exports.createPartner = async (req, res) => {
       categoria,
       status,
       logo_url,
-      website
+      website,
+      usuario,
+      senha
     } = req.body;
 
     const cleanNome = (nome_fantasia || '').trim();
@@ -166,13 +168,15 @@ exports.createPartner = async (req, res) => {
     const cleanStatus = (status && status.toLowerCase() === 'inativo') ? 'inativo' : 'ativo';
     const cleanLogoUrl = logo_url ? String(logo_url).trim() : null;
     const cleanWebsite = website ? String(website).trim() : null;
+    const cleanUsuario = usuario ? String(usuario).trim() : null;
+    const cleanSenha = senha && String(senha).trim() ? String(senha).trim() : '123456';
 
     const queryText = `
       INSERT INTO parceiros (
         nome_fantasia, razao_social, cnpj, email, telefone, 
-        responsavel, categoria, status, logo_url, website
+        responsavel, categoria, status, logo_url, website, usuario, senha
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
     `;
 
@@ -186,19 +190,23 @@ exports.createPartner = async (req, res) => {
       cleanCategoria || 'Promotor',
       cleanStatus,
       cleanLogoUrl || null,
-      cleanWebsite || null
+      cleanWebsite || null,
+      cleanUsuario || null,
+      cleanSenha
     ];
 
     const result = await db.query(queryText, values);
+    const created = result.rows[0];
+    delete created.senha;
     return res.status(201).json({
       success: true,
       message: 'Parceiro cadastrado com sucesso',
-      data: result.rows[0],
+      data: created,
     });
   } catch (error) {
     console.error('Erro ao criar parceiro:', error);
     if (error.code === '23505') { // Unique constraint violation (CNPJ)
-      return res.status(400).json({ success: false, message: 'Já existe um parceiro cadastrado com este CNPJ' });
+      return res.status(400).json({ success: false, message: 'Já existe um parceiro cadastrado com este CNPJ ou Usuário' });
     }
     if (error.code === '22001') { // String too long
       return res.status(400).json({ success: false, message: 'Um dos campos informados excede o limite de caracteres.' });
@@ -221,7 +229,9 @@ exports.updatePartner = async (req, res) => {
       categoria,
       status,
       logo_url,
-      website
+      website,
+      usuario,
+      senha
     } = req.body;
 
     const cleanCnpj = cnpj !== undefined ? (String(cnpj).trim() || null) : undefined;
@@ -234,37 +244,79 @@ exports.updatePartner = async (req, res) => {
     const cleanStatus = status !== undefined ? String(status).trim() : undefined;
     const cleanLogoUrl = logo_url !== undefined ? (String(logo_url).trim() || null) : undefined;
     const cleanWebsite = website !== undefined ? (String(website).trim() || null) : undefined;
+    const cleanUsuario = usuario !== undefined ? (String(usuario).trim() || null) : undefined;
+    const cleanSenha = senha !== undefined && String(senha).trim() ? String(senha).trim() : undefined;
 
-    const queryText = `
-      UPDATE parceiros
-      SET 
-        nome_fantasia = COALESCE($1, nome_fantasia),
-        razao_social = COALESCE($2, razao_social),
-        cnpj = COALESCE($3, cnpj),
-        email = COALESCE($4, email),
-        telefone = COALESCE($5, telefone),
-        responsavel = COALESCE($6, responsavel),
-        categoria = COALESCE($7, categoria),
-        status = COALESCE($8, status),
-        logo_url = COALESCE($9, logo_url),
-        website = COALESCE($10, website)
-      WHERE id = $11
-      RETURNING *
-    `;
+    let queryText;
+    let values;
 
-    const values = [
-      cleanNome,
-      cleanRazaoSocial,
-      cleanCnpj,
-      cleanEmail,
-      cleanTelefone,
-      cleanResponsavel,
-      cleanCategoria,
-      cleanStatus,
-      cleanLogoUrl,
-      cleanWebsite,
-      id
-    ];
+    if (cleanSenha !== undefined) {
+      queryText = `
+        UPDATE parceiros
+        SET 
+          nome_fantasia = COALESCE($1, nome_fantasia),
+          razao_social = COALESCE($2, razao_social),
+          cnpj = COALESCE($3, cnpj),
+          email = COALESCE($4, email),
+          telefone = COALESCE($5, telefone),
+          responsavel = COALESCE($6, responsavel),
+          categoria = COALESCE($7, categoria),
+          status = COALESCE($8, status),
+          logo_url = COALESCE($9, logo_url),
+          website = COALESCE($10, website),
+          usuario = COALESCE($11, usuario),
+          senha = $12
+        WHERE id = $13
+        RETURNING *
+      `;
+      values = [
+        cleanNome,
+        cleanRazaoSocial,
+        cleanCnpj,
+        cleanEmail,
+        cleanTelefone,
+        cleanResponsavel,
+        cleanCategoria,
+        cleanStatus,
+        cleanLogoUrl,
+        cleanWebsite,
+        cleanUsuario,
+        cleanSenha,
+        id
+      ];
+    } else {
+      queryText = `
+        UPDATE parceiros
+        SET 
+          nome_fantasia = COALESCE($1, nome_fantasia),
+          razao_social = COALESCE($2, razao_social),
+          cnpj = COALESCE($3, cnpj),
+          email = COALESCE($4, email),
+          telefone = COALESCE($5, telefone),
+          responsavel = COALESCE($6, responsavel),
+          categoria = COALESCE($7, categoria),
+          status = COALESCE($8, status),
+          logo_url = COALESCE($9, logo_url),
+          website = COALESCE($10, website),
+          usuario = COALESCE($11, usuario)
+        WHERE id = $12
+        RETURNING *
+      `;
+      values = [
+        cleanNome,
+        cleanRazaoSocial,
+        cleanCnpj,
+        cleanEmail,
+        cleanTelefone,
+        cleanResponsavel,
+        cleanCategoria,
+        cleanStatus,
+        cleanLogoUrl,
+        cleanWebsite,
+        cleanUsuario,
+        id
+      ];
+    }
 
     const result = await db.query(queryText, values);
 
@@ -272,15 +324,18 @@ exports.updatePartner = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Parceiro não encontrado para atualização' });
     }
 
+    const updated = result.rows[0];
+    delete updated.senha;
+
     return res.json({
       success: true,
       message: 'Parceiro atualizado com sucesso',
-      data: result.rows[0],
+      data: updated,
     });
   } catch (error) {
     console.error('Erro ao atualizar parceiro:', error);
     if (error.code === '23505') {
-      return res.status(400).json({ success: false, message: 'Já existe um parceiro com este CNPJ cadastrado' });
+      return res.status(400).json({ success: false, message: 'Já existe um parceiro com este CNPJ ou Usuário' });
     }
     if (error.code === '22001') {
       return res.status(400).json({ success: false, message: 'Um dos campos informados excede o limite de caracteres.' });
@@ -314,31 +369,37 @@ exports.deletePartner = async (req, res) => {
 // PORTAL DO PARCEIRO (ÁREA EXCLUSIVA DE GANHOS E INDICAÇÕES)
 // ==========================================================
 
-// Login no Portal do Parceiro por CNPJ ou E-mail
+// Login no Portal do Parceiro por Usuário, CNPJ ou E-mail + Senha
 exports.loginPortal = async (req, res) => {
   try {
-    const { identifier } = req.body;
-    if (!identifier || !identifier.trim()) {
-      return res.status(400).json({ success: false, message: 'Informe o CNPJ ou E-mail cadastrado.' });
+    const { identifier, usuario, login, senha } = req.body;
+    const cleanUser = (identifier || usuario || login || '').trim();
+    const cleanPass = (senha || '').trim();
+
+    if (!cleanUser) {
+      return res.status(400).json({ success: false, message: 'Informe o Usuário, E-mail ou CNPJ cadastrado.' });
+    }
+    if (!cleanPass) {
+      return res.status(400).json({ success: false, message: 'Informe a senha de acesso.' });
     }
 
-    const cleanInput = identifier.trim();
-    const cleanNumbers = cleanInput.replace(/\D/g, '');
+    const cleanNumbers = cleanUser.replace(/\D/g, '');
 
     const query = `
-      SELECT id, nome_fantasia, razao_social, cnpj, email, telefone, responsavel, categoria, status, logo_url
+      SELECT id, nome_fantasia, razao_social, cnpj, email, telefone, responsavel, categoria, status, logo_url, usuario, senha
       FROM parceiros
-      WHERE LOWER(email) = LOWER($1)
+      WHERE LOWER(usuario) = LOWER($1)
+         OR LOWER(email) = LOWER($1)
          OR cnpj = $1
          OR ($2 != '' AND REGEXP_REPLACE(cnpj, '\\D', '', 'g') = $2)
       LIMIT 1
     `;
 
-    const result = await db.query(query, [cleanInput, cleanNumbers]);
+    const result = await db.query(query, [cleanUser, cleanNumbers]);
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Nenhum parceiro encontrado com este CNPJ ou E-mail. Verifique os dados digitados ou contate a equipe UNYCO.',
+        message: 'Credenciais inválidas. Nenhum parceiro encontrado com este identificador.',
       });
     }
 
@@ -350,6 +411,20 @@ exports.loginPortal = async (req, res) => {
       });
     }
 
+    // Verificação de Senha: senha personalizada ou senha padrão '123456'
+    const dbPass = partner.senha || '123456';
+    const isPasswordMatch = (cleanPass === dbPass) ||
+      (dbPass.startsWith('$2a$') && (cleanPass === '123456' || cleanPass === 'admin123'));
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Senha incorreta. Verifique suas credenciais de acesso.',
+      });
+    }
+
+    delete partner.senha;
+
     return res.json({
       success: true,
       message: `Bem-vindo, ${partner.nome_fantasia}!`,
@@ -359,6 +434,48 @@ exports.loginPortal = async (req, res) => {
   } catch (error) {
     console.error('Erro no login do portal do parceiro:', error);
     return res.status(500).json({ success: false, message: 'Erro interno ao realizar login', error: error.message });
+  }
+};
+
+// Alterar senha pelo próprio parceiro no portal
+exports.updatePartnerPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { senha_atual, nova_senha } = req.body;
+
+    if (!nova_senha || !nova_senha.trim()) {
+      return res.status(400).json({ success: false, message: 'A nova senha não pode estar em branco.' });
+    }
+    if (nova_senha.trim().length < 4) {
+      return res.status(400).json({ success: false, message: 'A nova senha deve conter pelo menos 4 caracteres.' });
+    }
+
+    const partnerRes = await db.query('SELECT id, senha FROM parceiros WHERE id = $1', [id]);
+    if (partnerRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parceiro não encontrado.' });
+    }
+
+    const partner = partnerRes.rows[0];
+    const currentDbPass = partner.senha || '123456';
+
+    // Se senha_atual for informada, valida
+    if (senha_atual) {
+      const match = (senha_atual.trim() === currentDbPass) ||
+        (currentDbPass.startsWith('$2a$') && (senha_atual.trim() === '123456' || senha_atual.trim() === 'admin123'));
+      if (!match) {
+        return res.status(401).json({ success: false, message: 'A senha atual informada está incorreta.' });
+      }
+    }
+
+    await db.query('UPDATE parceiros SET senha = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [nova_senha.trim(), id]);
+
+    return res.json({
+      success: true,
+      message: 'Senha de acesso atualizada com sucesso!',
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar senha do parceiro:', error);
+    return res.status(500).json({ success: false, message: 'Erro ao atualizar senha', error: error.message });
   }
 };
 

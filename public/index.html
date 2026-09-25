@@ -1005,6 +1005,23 @@
             </div>
           </div>
 
+          <!-- Credenciais de Acesso ao Portal do Parceiro -->
+          <div class="form-row" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px;">
+            <div class="form-group flex-1" style="margin-bottom: 0;">
+              <label for="partnerUsuario"><i class="fa-solid fa-user-lock" style="color: #0284C7;"></i> Usuário de Login (Portal)</label>
+              <input type="text" id="partnerUsuario" placeholder="Ex: fenatae ou deixe vazio para usar E-mail/CNPJ">
+            </div>
+            <div class="form-group flex-1" style="margin-bottom: 0;">
+              <label for="partnerSenha"><i class="fa-solid fa-key" style="color: #0284C7;"></i> Senha de Acesso ao Portal</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="partnerSenha" placeholder="Padrão: 123456 (Deixe em branco p/ manter)">
+                <button type="button" class="btn-toggle-password" onclick="app.togglePasswordVisibility('partnerSenha', this)" title="Exibir/Ocultar Senha">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group" style="margin-bottom: 14px;">
             <label for="partnerLogoUrl" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
               <span style="font-weight: 700; color: #0F172A;"><i class="fa-solid fa-image" style="color: var(--primary);"></i> Logo / Imagem da Academia ou Parceiro</span>

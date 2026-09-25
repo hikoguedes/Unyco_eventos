@@ -2884,6 +2884,12 @@ window.app = {
     document.getElementById('partnerFormId').value = '';
     document.getElementById('partnerModalTitle').textContent = 'Cadastrar Novo Parceiro';
 
+    // Credenciais de Acesso ao Portal
+    const userInp = document.getElementById('partnerUsuario');
+    const passInp = document.getElementById('partnerSenha');
+    if (userInp) userInp.value = '';
+    if (passInp) passInp.value = '123456';
+
     const defaultLogo = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
     const logoInput = document.getElementById('partnerLogoUrl');
     if (logoInput) logoInput.value = '';
@@ -2926,6 +2932,12 @@ window.app = {
     document.getElementById('partnerLogoUrl').value = partner.logo_url || '';
     document.getElementById('partnerWebsite').value = partner.website || '';
 
+    // Credenciais de Acesso ao Portal
+    const userInp = document.getElementById('partnerUsuario');
+    const passInp = document.getElementById('partnerSenha');
+    if (userInp) userInp.value = partner.usuario || '';
+    if (passInp) passInp.value = '';
+
     const logoVal = partner.logo_url || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
     this.updatePartnerLogoPreviewFromUrl(logoVal);
     const logoFileInput = document.getElementById('partnerLogoFileInput');
@@ -2966,6 +2978,11 @@ window.app = {
       logo_url: document.getElementById('partnerLogoUrl').value.trim(),
       website: document.getElementById('partnerWebsite').value.trim(),
     };
+
+    const usuarioVal = document.getElementById('partnerUsuario')?.value.trim();
+    const senhaVal = document.getElementById('partnerSenha')?.value.trim();
+    if (usuarioVal !== undefined) payload.usuario = usuarioVal;
+    if (senhaVal) payload.senha = senhaVal;
 
     if (saveBtn) {
       saveBtn.disabled = true;
