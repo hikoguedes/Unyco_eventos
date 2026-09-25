@@ -1015,6 +1015,171 @@ body {
   gap: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   color: #FFFFFF;
+  transition: all 0.3s ease;
+}
+
+/* Reposiciona categoria quando o evento está em DEX para evitar colisão */
+.event-category-badge.with-dex {
+  top: auto !important;
+  bottom: 12px !important;
+  left: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ==========================================================
+   TARJA DIAGONAL DISPONIBILIDADE EXTRA (DEX)
+   ========================================================== */
+.card-ribbon-dex {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 92px;
+  height: 92px;
+  overflow: hidden;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.ribbon-dex-badge {
+  position: absolute;
+  top: 18px;
+  left: -32px;
+  width: 126px;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 50%, #991B1B 100%);
+  color: #FFFFFF;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.2;
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  animation: ribbonPulse 3s infinite ease-in-out;
+}
+
+.ribbon-dex-badge i {
+  font-size: 8px;
+}
+
+@keyframes ribbonPulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.15);
+  }
+}
+
+/* Aviso explicativo no corpo do Card */
+.event-dex-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  color: #BE123C;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.event-dex-notice i {
+  color: #E11D48;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* Mini tag DEX para tabelas e widgets */
+.dex-tag-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.4);
+}
+
+/* Alerta no Modal de Vinculação de Hotéis */
+.dex-modal-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  border-left: 4px solid #E11D48;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.dex-modal-notice-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FFE4E6;
+  color: #E11D48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.dex-modal-notice-content h4 {
+  font-size: 13px;
+  font-weight: 800;
+  color: #9F1239;
+  margin: 0 0 3px 0;
+}
+
+.dex-modal-notice-content p {
+  font-size: 11.5px;
+  color: #4C0519;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Aviso em tempo real no cadastro de eventos */
+.dex-preview-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  transition: all 0.3s ease;
+}
+
+.dex-preview-notice.is-dex {
+  background: #FFF1F2;
+  border: 1px solid #FECDD3;
+  color: #BE123C;
+}
+
+.dex-preview-notice.is-normal {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #15803D;
 }
 
 /* ==========================================================

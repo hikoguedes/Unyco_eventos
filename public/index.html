@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="./css/style.css?v=20260923_modal_persist_05">
+  <link rel="stylesheet" href="./css/style.css?v=20260925_dex_01">
 </head>
 <body>
   <!-- Toast Container para Notificações -->
@@ -396,6 +396,11 @@
               <option value="Em Andamento">Em Andamento</option>
               <option value="Concluído">Concluídos</option>
               <option value="Cancelado">Cancelados</option>
+            </select>
+            <select id="eventDexFilter" class="custom-select" title="Filtrar por Disponibilidade Extra (DEX)">
+              <option value="">Todos os Prazos</option>
+              <option value="dex">⚡ Apenas DEX (Disp. Extra)</option>
+              <option value="normal">📅 Prazo Regular (&ge; 30 dias)</option>
             </select>
             <button class="btn btn-primary" onclick="app.openCreateEventModal()">
               <i class="fa-solid fa-plus"></i> Novo Evento
@@ -1182,13 +1187,14 @@
           <div class="form-row">
             <div class="form-group flex-1">
               <label for="eventDataInicio">Data e Hora de Início *</label>
-              <input type="datetime-local" id="eventDataInicio" required>
+              <input type="datetime-local" id="eventDataInicio" required oninput="app.handleEventDateChange(this.value)">
             </div>
             <div class="form-group flex-1">
               <label for="eventDataFim">Data e Hora de Término</label>
               <input type="datetime-local" id="eventDataFim">
             </div>
           </div>
+          <div id="eventDexPreviewNotice" style="display: none; margin-bottom: 12px;"></div>
 
           <div class="form-row">
             <div class="form-group flex-1">
@@ -1583,6 +1589,7 @@
       <form id="eventHotelLinkForm" onsubmit="app.handleLinkHotelToEvent(event)">
         <input type="hidden" id="linkHotelEventId">
         <div class="modal-body">
+          <div id="linkHotelDexAlert"></div>
           <div class="form-group">
             <label for="linkHotelSelect">Hotel da Curadoria UNYCO *</label>
             <select id="linkHotelSelect" required>
@@ -1768,6 +1775,6 @@
   </div>
 
   <!-- Script principal da aplicação -->
-  <script src="./js/app-unyco.js?v=20260923_modal_persist_05"></script>
+  <script src="./js/app-unyco.js?v=20260925_dex_01"></script>
 </body>
 </html>

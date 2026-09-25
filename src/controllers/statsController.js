@@ -29,7 +29,9 @@ exports.getDashboardStats = async (req, res) => {
       SELECT 
         e.*,
         p.nome_fantasia AS parceiro_nome,
-        p.logo_url AS parceiro_logo
+        p.logo_url AS parceiro_logo,
+        (e.data_inicio < (e.created_at + INTERVAL '30 days')) AS is_dex,
+        ROUND(EXTRACT(EPOCH FROM (e.data_inicio - e.created_at)) / 86400)::int AS dias_antecedencia
       FROM eventos e
       JOIN parceiros p ON p.id = e.parceiro_id
       WHERE e.status IN ('Agendado', 'Em Andamento')

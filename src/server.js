@@ -109,9 +109,15 @@ if (BASE_PATH) {
   app.get(`${BASE_PATH}/health`, healthHandler);
 }
 
-// Rota pública da Landing Page
+// Rota pública da Landing Page e do Portal do Parceiro
 app.get('/lp.html', (req, res) => {
   sendProcessedHtml(path.join(__dirname, '..', 'public', 'lp.html'), res);
+});
+app.get('/parceiro.html', (req, res) => {
+  sendProcessedHtml(path.join(__dirname, '..', 'public', 'parceiro.html'), res);
+});
+app.get('/parceiro', (req, res) => {
+  sendProcessedHtml(path.join(__dirname, '..', 'public', 'parceiro.html'), res);
 });
 
 // Rota raiz e rota do subcaminho
@@ -124,6 +130,12 @@ if (BASE_PATH) {
   });
   app.get(`${BASE_PATH}/lp.html`, (req, res) => {
     sendProcessedHtml(path.join(__dirname, '..', 'public', 'lp.html'), res);
+  });
+  app.get(`${BASE_PATH}/parceiro.html`, (req, res) => {
+    sendProcessedHtml(path.join(__dirname, '..', 'public', 'parceiro.html'), res);
+  });
+  app.get(`${BASE_PATH}/parceiro`, (req, res) => {
+    sendProcessedHtml(path.join(__dirname, '..', 'public', 'parceiro.html'), res);
   });
 }
 

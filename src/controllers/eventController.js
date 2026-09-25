@@ -3,7 +3,7 @@ const db = require('../config/database');
 // Listar eventos com filtros, contagem de inscritos, dados do parceiro e categoria
 exports.getAllEvents = async (req, res) => {
   try {
-    const { parceiro_id, categoria_id, status, modalidade, search } = req.query;
+    const { parceiro_id, categoria_id, status, modalidade, search, dex } = req.query;
 
     let queryText = `
       SELECT 
@@ -16,6 +16,8 @@ exports.getAllEvents = async (req, res) => {
         c.nome AS categoria_nome,
         c.icone AS categoria_icone,
         c.cor AS categoria_cor,
+        (e.data_inicio < (e.created_at + INTERVAL '30 days')) AS is_dex,
+        ROUND(EXTRACT(EPOCH FROM (e.data_inicio - e.created_at)) / 86400)::int AS dias_antecedencia,
         COUNT(i.id)::int AS total_inscritos
       FROM eventos e
       JOIN parceiros p ON p.id = e.parceiro_id
@@ -49,6 +51,12 @@ exports.getAllEvents = async (req, res) => {
     if (search) {
       queryParams.push(`%${search}%`);
       conditions.push(`(e.nome ILIKE $${queryParams.length} OR e.local ILIKE $${queryParams.length} OR p.nome_fantasia ILIKE $${queryParams.length} OR c.nome ILIKE $${queryParams.length})`);
+    }
+
+    if (dex === 'true' || dex === 'dex') {
+      conditions.push(`(e.data_inicio < (e.created_at + INTERVAL '30 days'))`);
+    } else if (dex === 'false' || dex === 'normal') {
+      conditions.push(`(e.data_inicio >= (e.created_at + INTERVAL '30 days'))`);
     }
 
     if (conditions.length > 0) {
@@ -91,6 +99,8 @@ exports.getEventById = async (req, res) => {
         c.nome AS categoria_nome,
         c.icone AS categoria_icone,
         c.cor AS categoria_cor,
+        (e.data_inicio < (e.created_at + INTERVAL '30 days')) AS is_dex,
+        ROUND(EXTRACT(EPOCH FROM (e.data_inicio - e.created_at)) / 86400)::int AS dias_antecedencia,
         COUNT(i.id)::int AS total_inscritos
       FROM eventos e
       JOIN parceiros p ON p.id = e.parceiro_id

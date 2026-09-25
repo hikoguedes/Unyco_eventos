@@ -122,6 +122,9 @@ window.app = {
     document.getElementById('eventStatusFilter')?.addEventListener('change', () => {
       this.renderEvents();
     });
+    document.getElementById('eventDexFilter')?.addEventListener('change', () => {
+      this.renderEvents();
+    });
 
     // Filtros de Propostas
     document.getElementById('proposalSearchInput')?.addEventListener('input', () => {
@@ -1568,7 +1571,10 @@ window.app = {
               <span class="event-date-month">${month}</span>
             </div>
             <div class="upcoming-info">
-              <h4 class="upcoming-title">${this.escapeHtml(ev.nome)}</h4>
+              <h4 class="upcoming-title">
+                ${this.escapeHtml(ev.nome)}
+                ${this.isEventDex(ev).isDex ? `<span class="dex-tag-mini" title="Disponibilidade Extra (DEX: < 30 dias de antecedência)">DEX</span>` : ''}
+              </h4>
               <div class="upcoming-meta">
                 <span class="upcoming-partner-tag"><i class="fa-solid fa-handshake"></i> ${this.escapeHtml(ev.parceiro_nome)}</span>
                 <span><i class="fa-solid fa-location-dot"></i> ${this.escapeHtml(ev.local)}</span>
@@ -1684,6 +1690,19 @@ window.app = {
           </button>
         </div>
 
+        <!-- Botão: Portal Exclusivo do Parceiro (Extrato & Comissões) -->
+        <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+          <a href="${this.getPartnerPortalUrl(p.id)}" target="_blank" class="btn btn-sm flex-1" style="background: #F8FAFC; border: 1px solid #CBD5E1; color: #0F172A; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Abrir Área Exclusiva do Parceiro">
+            <i class="fa-solid fa-chart-pie" style="color: #0284C7;"></i> Portal do Parceiro
+          </a>
+          <button class="btn btn-sm btn-outline" onclick="app.copyPartnerPortalLink(${p.id})" title="Copiar Link do Portal para enviar ao parceiro">
+            <i class="fa-solid fa-copy"></i>
+          </button>
+          <button class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A;" onclick="app.sharePartnerPortalWhatsApp(${p.id})" title="Enviar link do Portal no WhatsApp do parceiro">
+            <i class="fa-brands fa-whatsapp"></i>
+          </button>
+        </div>
+
         <button class="btn btn-sm" style="width: 100%; margin-bottom: 12px; background: #EFF6FF; border: 1px solid #BFDBFE; color: #1D4ED8; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 10px; border-radius: var(--radius-sm);" onclick="app.openPartnerWalletModal(${p.id})" title="Monitorar Alunos e Indicações deste Parceiro">
           <i class="fa-solid fa-user-graduate"></i> Alunos na Carteira: <strong>${p.total_alunos_carteira || 0} alunos</strong>
         </button>
@@ -1712,6 +1731,53 @@ window.app = {
   },
 
   // ==========================================================
+  // REGRA DE NEGÓCIO: DISPONIBILIDADE EXTRA (DEX)
+  // Antecedência mínima requerida de 30 dias entre o cadastro e a data de início.
+  // Se (data_inicio - data_cadastro) < 30 dias -> DEX (regra especial com hotel)
+  // ==========================================================
+  isEventDex(event) {
+    if (!event || !event.data_inicio) return { isDex: false, dias: 0 };
+    if (typeof event.is_dex === 'boolean' && typeof event.dias_antecedencia === 'number') {
+      return { isDex: event.is_dex, dias: event.dias_antecedencia };
+    }
+    const start = new Date(event.data_inicio).getTime();
+    const created = event.created_at ? new Date(event.created_at).getTime() : Date.now();
+    const diffDays = Math.round((start - created) / (1000 * 60 * 60 * 24));
+    return { isDex: diffDays < 30, dias: diffDays };
+  },
+
+  handleEventDateChange(dateValue) {
+    const preview = document.getElementById('eventDexPreviewNotice');
+    if (!preview) return;
+    if (!dateValue) {
+      preview.style.display = 'none';
+      return;
+    }
+    const start = new Date(dateValue).getTime();
+    const currentId = document.getElementById('eventFormId')?.value;
+    let createdTime = Date.now();
+    if (currentId) {
+      const existing = this.state.events.find(e => e.id == currentId);
+      if (existing?.created_at) createdTime = new Date(existing.created_at).getTime();
+    }
+    const diffDays = Math.round((start - createdTime) / (1000 * 60 * 60 * 24));
+    preview.style.display = 'flex';
+    if (diffDays < 30) {
+      preview.className = 'dex-preview-notice is-dex';
+      preview.innerHTML = `
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span><strong>Atenção (DEX):</strong> O evento terá <strong>${diffDays >= 0 ? diffDays + ' dias' : 'cadastro tardio'}</strong> de antecedência (&lt; 30 dias). Entrará na regra de <strong>Disponibilidade Extra (DEX)</strong> para negociação com hotéis.</span>
+      `;
+    } else {
+      preview.className = 'dex-preview-notice is-normal';
+      preview.innerHTML = `
+        <i class="fa-solid fa-circle-check"></i>
+        <span><strong>Prazo Regular:</strong> ${diffDays} dias de antecedência (&ge; 30 dias). Condições e tarifas padrão com a rede hoteleira.</span>
+      `;
+    }
+  },
+
+  // ==========================================================
   // RENDERIZAÇÃO DE EVENTOS
   // ==========================================================
   renderEvents() {
@@ -1720,6 +1786,7 @@ window.app = {
     const categoryFilter = document.getElementById('eventCategoryFilter')?.value || '';
     const partnerFilter = document.getElementById('eventPartnerFilter')?.value || '';
     const statusFilter = document.getElementById('eventStatusFilter')?.value || '';
+    const dexFilter = document.getElementById('eventDexFilter')?.value || '';
 
     let list = this.state.events;
 
@@ -1733,6 +1800,12 @@ window.app = {
 
     if (statusFilter) {
       list = list.filter(e => e.status === statusFilter);
+    }
+
+    if (dexFilter === 'dex') {
+      list = list.filter(e => this.isEventDex(e).isDex);
+    } else if (dexFilter === 'normal') {
+      list = list.filter(e => !this.isEventDex(e).isDex);
     }
 
     if (search) {
@@ -1769,12 +1842,23 @@ window.app = {
       const categoryIcon = e.categoria_icone || 'fa-trophy';
       const totalInscritos = e.total_inscritos || 0;
 
+      const dexInfo = this.isEventDex(e);
+      const isDex = dexInfo.isDex;
+      const diasAntecedencia = dexInfo.dias;
+
       return `
         <div class="event-card">
           <div class="event-banner-wrap">
             <img class="event-banner-img" src="${banner}" alt="${this.escapeHtml(e.nome)}" onerror="this.src='https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600'">
+            ${isDex ? `
+              <div class="card-ribbon-dex" title="Disponibilidade Extra (DEX): Cadastrado com menos de 30 dias de antecedência (${diasAntecedencia >= 0 ? diasAntecedencia + ' dias' : 'cadastro tardio'})">
+                <div class="ribbon-dex-badge">
+                  <i class="fa-solid fa-bolt"></i> DEX
+                </div>
+              </div>
+            ` : ''}
             ${e.categoria_nome ? `
-              <span class="event-category-badge" style="background: ${categoryColor};">
+              <span class="event-category-badge ${isDex ? 'with-dex' : ''}" style="background: ${categoryColor};">
                 <i class="fa-solid ${categoryIcon}"></i> ${this.escapeHtml(e.categoria_nome)}
               </span>
             ` : ''}
@@ -1789,6 +1873,13 @@ window.app = {
             </div>
 
             <h3 class="event-title">${this.escapeHtml(e.nome)}</h3>
+
+            ${isDex ? `
+              <div class="event-dex-notice" title="Regra de Negociação DEX: Evento cadastrado com menos de 30 dias de antecedência">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span><strong>DEX:</strong> Disponibilidade Extra (${diasAntecedencia >= 0 ? diasAntecedencia + ' dias de antecedência' : 'Cadastrado retroativo'})</span>
+              </div>
+            ` : ''}
 
             <div class="event-meta-grid">
               <div class="event-meta-item">
@@ -1820,8 +1911,8 @@ window.app = {
               <button class="btn btn-sm btn-outline flex-1" onclick="app.viewEventRegistrations(${e.id})" title="Ver lista de inscritos">
                 <i class="fa-solid fa-users-viewfinder"></i> Inscritos (${totalInscritos})
               </button>
-              <button class="btn btn-sm btn-secondary" onclick="app.openLinkHotelsModal(${e.id})" title="Vincular Hotéis da Curadoria ao Evento">
-                <i class="fa-solid fa-hotel"></i> Hotéis
+              <button class="btn btn-sm ${isDex ? 'btn-outline' : 'btn-secondary'}" onclick="app.openLinkHotelsModal(${e.id})" title="${isDex ? 'Atenção: Evento em DEX - Negociação de hotéis em regra especial' : 'Vincular Hotéis da Curadoria ao Evento'}" style="${isDex ? 'border-color: #FDA4AF; color: #BE123C; background: #FFF1F2;' : ''}">
+                <i class="fa-solid fa-hotel"></i> Hotéis ${isDex ? '<span class="dex-tag-mini" style="font-size: 8.5px; padding: 1px 4px; margin-left: 3px;">DEX</span>' : ''}
               </button>
             </div>
 
@@ -1903,6 +1994,44 @@ window.app = {
 
   copyPartnerLPLink(partnerId) {
     this.copyPartnerWalletLink(partnerId);
+  },
+
+  // Retorna a URL do Portal Exclusivo do Parceiro (Extrato, Indicações & Comissões)
+  getPartnerPortalUrl(partnerId) {
+    const origin = window.location.origin;
+    let base = window.BASE_PATH;
+    if (!base && typeof window !== 'undefined' && window.location && window.location.pathname.includes('/unycoeventos')) {
+      base = '/unycoeventos';
+    }
+    base = (base || '').replace(/\/$/, '');
+    return `${origin}${base}/parceiro.html?id=${partnerId}`;
+  },
+
+  // Copiar link de acesso ao Portal do Parceiro
+  copyPartnerPortalLink(partnerId) {
+    const url = this.getPartnerPortalUrl(partnerId);
+    const partner = this.state.partners.find(p => p.id === partnerId);
+    const partnerName = partner ? partner.nome_fantasia : 'Parceiro';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        this.showToast(`Link do Portal de ${partnerName} copiado! Envie ao parceiro para ele consultar seu extrato.\n${url}`, 'success');
+      }).catch(() => {
+        prompt(`Copie o Link do Portal do Parceiro (${partnerName}):`, url);
+      });
+    } else {
+      prompt(`Copie o Link do Portal do Parceiro (${partnerName}):`, url);
+    }
+  },
+
+  // Enviar link do Portal do Parceiro via WhatsApp
+  sharePartnerPortalWhatsApp(partnerId) {
+    const partner = this.state.partners.find(p => p.id === partnerId);
+    if (!partner) return;
+    const url = this.getPartnerPortalUrl(partnerId);
+    const phone = partner.telefone ? partner.telefone.replace(/\D/g, '') : '';
+    const text = encodeURIComponent(`Olá ${partner.responsavel || partner.nome_fantasia}! Acesse sua Área Exclusiva do Parceiro UNYCO para acompanhar suas indicações, reservas de hotel e comissões a receber:\n\n${url}`);
+    const whatsappUrl = phone ? `https://api.whatsapp.com/send?phone=55${phone}&text=${text}` : `https://api.whatsapp.com/send?text=${text}`;
+    window.open(whatsappUrl, '_blank');
   },
 
   // Copiar link a partir do formulário de parceiro
@@ -2938,6 +3067,7 @@ window.app = {
     tomorrow.setDate(tomorrow.getDate() + 7);
     tomorrow.setHours(8, 0, 0, 0);
     document.getElementById('eventDataInicio').value = tomorrow.toISOString().slice(0, 16);
+    this.handleEventDateChange(document.getElementById('eventDataInicio').value);
 
     this.openModal('eventModal');
   },
@@ -2959,6 +3089,7 @@ window.app = {
       const start = new Date(ev.data_inicio);
       start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
       document.getElementById('eventDataInicio').value = start.toISOString().slice(0, 16);
+      this.handleEventDateChange(document.getElementById('eventDataInicio').value);
     }
 
     if (ev.data_fim) {
@@ -3135,6 +3266,29 @@ window.app = {
             </button>
           </div>
         </div>
+
+        <!-- Box Portal Exclusivo do Parceiro -->
+        <div style="grid-column: 1 / -1; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: var(--radius-md); padding: 14px 18px; margin-top: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-chart-pie" style="color: #0284C7;"></i> Portal Exclusivo do Parceiro (Extrato, Indicações & Comissões)
+            </div>
+            <div style="font-size: 12px; color: #64748B; font-weight: 500; margin-top: 2px;">
+              ${this.getPartnerPortalUrl(partner.id)}
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-sm btn-primary" onclick="app.copyPartnerPortalLink(${partner.id})" title="Copiar Link do Portal">
+              <i class="fa-solid fa-copy"></i> Copiar Link
+            </button>
+            <a href="${this.getPartnerPortalUrl(partner.id)}" target="_blank" class="btn btn-sm btn-secondary" title="Abrir Portal do Parceiro">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Acessar Portal
+            </a>
+            <button class="btn btn-sm btn-outline" style="border-color: #86EFAC; color: #16A34A; background: #FFFFFF;" onclick="app.sharePartnerPortalWhatsApp(${partner.id})" title="Enviar link do Portal no WhatsApp">
+              <i class="fa-brands fa-whatsapp"></i> WhatsApp
+            </button>
+          </div>
+        </div>
       `;
 
       const events = partner.eventos || [];
@@ -3165,9 +3319,13 @@ window.app = {
               ${events.map(e => {
                 const dateObj = new Date(e.data_inicio);
                 const formattedDate = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const dexInfo = this.isEventDex(e);
                 return `
                   <tr>
-                    <td><strong>${this.escapeHtml(e.nome)}</strong></td>
+                    <td>
+                      <strong>${this.escapeHtml(e.nome)}</strong>
+                      ${dexInfo.isDex ? `<span class="dex-tag-mini" style="margin-left: 6px;" title="Disponibilidade Extra (${dexInfo.dias >= 0 ? dexInfo.dias + ' dias de antecedência' : 'retroativo'})">DEX</span>` : ''}
+                    </td>
                     <td><span class="modality-pill" style="padding: 3px 8px; font-size: 11px;">${this.escapeHtml(e.modalidade)}</span></td>
                     <td>${formattedDate}</td>
                     <td>${this.escapeHtml(e.local)}</td>
@@ -3655,6 +3813,27 @@ window.app = {
 
     document.getElementById('linkHotelEventId').value = ev.id;
     document.getElementById('linkHotelEventTitle').textContent = `Vincular Hotel ao Evento: ${ev.nome}`;
+    
+    // Alerta de DEX para orientar regras especiais de negociação
+    const dexAlert = document.getElementById('linkHotelDexAlert');
+    const dexInfo = this.isEventDex(ev);
+    if (dexAlert) {
+      if (dexInfo.isDex) {
+        dexAlert.innerHTML = `
+          <div class="dex-modal-notice">
+            <div class="dex-modal-notice-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="dex-modal-notice-content">
+              <h4>Atenção: Evento em Disponibilidade Extra (DEX)</h4>
+              <p>Este evento foi cadastrado com menos de 30 dias de antecedência (${dexInfo.dias >= 0 ? dexInfo.dias + ' dias' : 'cadastro tardio'}). Aplicar regras especiais e condições de bloqueio spot/tarifa balcão com o hotel.</p>
+            </div>
+          </div>
+        `;
+        dexAlert.style.display = 'block';
+      } else {
+        dexAlert.innerHTML = '';
+        dexAlert.style.display = 'none';
+      }
+    }
     
     // Popular dropdown de hotéis
     const select = document.getElementById('linkHotelSelect');

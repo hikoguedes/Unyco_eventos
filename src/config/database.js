@@ -91,6 +91,9 @@ async function initDatabase() {
   initPromise = (async () => {
     // 1. Tentar conectar ao PostgreSQL já em execução (Docker ou Local)
     let pool = new Pool(dbConfig);
+    pool.on('error', (err) => {
+      console.warn('⚠️ [UNYCO DB] Erro no pool de conexão PostgreSQL (ignorado para resiliência):', err.message);
+    });
     try {
       const client = await pool.connect();
       client.release();
@@ -107,6 +110,9 @@ async function initDatabase() {
 
       // 3. Reconectar
       pool = new Pool(dbConfig);
+      pool.on('error', (err) => {
+        console.warn('⚠️ [UNYCO DB] Erro no pool de conexão PostgreSQL (ignorado para resiliência):', err.message);
+      });
       const client = await pool.connect();
       client.release();
       console.log(`📦 [UNYCO DB] Conectado com sucesso ao banco PostgreSQL!`);
