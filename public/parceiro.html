@@ -1127,6 +1127,29 @@
       partnerId: null,
       data: null,
 
+      urlWithBase(url) {
+        if (!url) return url;
+        let base = window.BASE_PATH;
+        if (!base && typeof window !== 'undefined' && window.location && window.location.pathname.includes('/unycoeventos')) {
+          base = '/unycoeventos';
+        }
+        base = (base || '').replace(/\/$/, '');
+        if (!url.startsWith('/')) url = '/' + url;
+        if (base && !url.startsWith(base)) {
+          return base + url;
+        }
+        return url;
+      },
+
+      resolveImageUrl(url, fallback = 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150') {
+        if (!url || typeof url !== 'string' || !url.trim()) return fallback;
+        const trimmed = url.trim();
+        if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+          return trimmed;
+        }
+        return this.urlWithBase(trimmed.startsWith('/') ? trimmed : '/' + trimmed);
+      },
+
       init() {
         const urlParams = new URLSearchParams(window.location.search);
         const queryId = urlParams.get('id') || urlParams.get('partnerId') || urlParams.get('p');
@@ -1148,7 +1171,7 @@
 
       async loadQuickPartnerButtons() {
         try {
-          const res = await fetch('/api/partners');
+          const res = await fetch(this.urlWithBase('/api/partners'));
           const json = await res.json();
           if (json.success && json.data) {
             const container = document.getElementById('quickPartnerButtons');
@@ -1185,7 +1208,7 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
 
         try {
-          const res = await fetch('/api/partners/portal/login', {
+          const res = await fetch(this.urlWithBase('/api/partners/portal/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: input }),
@@ -1223,7 +1246,7 @@
         if (!this.partnerId) return;
 
         try {
-          const res = await fetch(`/api/partners/${this.partnerId}/portal-summary`);
+          const res = await fetch(this.urlWithBase(`/api/partners/${this.partnerId}/portal-summary`));
           const json = await res.json();
 
           if (!json.success) {
@@ -1250,13 +1273,14 @@
         document.getElementById('partnerNomeFantasia').innerHTML = `
           <span>${this.escapeHtml(p.nome_fantasia)}</span>
         `;
-        document.getElementById('partnerLogo').src = p.logo_url || 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=150';
+        document.getElementById('partnerLogo').src = this.resolveImageUrl(p.logo_url);
         document.getElementById('partnerCategoriaBadge').textContent = p.categoria || 'Parceiro Oficial';
         document.getElementById('partnerCnpj').innerHTML = `<i class="fa-solid fa-id-card"></i> CNPJ: ${this.escapeHtml(p.cnpj || 'Não informado')}`;
         document.getElementById('partnerResponsavel').innerHTML = `<i class="fa-solid fa-user"></i> Contato: ${this.escapeHtml(p.responsavel || p.email || 'Não informado')}`;
 
-        // Link de indicação / Carteira
-        const referralUrl = `${window.location.origin}/lp.html?carteira=${p.id}`;
+        // Link de indicação / Carteira com BASE_PATH correto
+        const base = (window.BASE_PATH || (window.location.pathname.includes('/unycoeventos') ? '/unycoeventos' : '')).replace(/\/$/, '');
+        const referralUrl = `${window.location.origin}${base}/lp.html?carteira=${p.id}`;
         document.getElementById('partnerReferralUrlInput').value = referralUrl;
 
         // Comissões no form
@@ -1405,6 +1429,7 @@
       renderEvents() {
         const list = this.data.events || [];
         const container = document.getElementById('eventsGridContainer');
+        const base = (window.BASE_PATH || (window.location.pathname.includes('/unycoeventos') ? '/unycoeventos' : '')).replace(/\/$/, '');
 
         if (list.length === 0) {
           container.innerHTML = `
@@ -1419,7 +1444,7 @@
         container.innerHTML = list.map(e => {
           const dateObj = new Date(e.data_inicio);
           const formattedDate = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-          const banner = e.banner_url || 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600';
+          const banner = this.resolveImageUrl(e.banner_url, 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=600');
           const isDex = e.is_dex;
           const hotels = e.hoteis_vinculados || [];
 
@@ -1464,7 +1489,7 @@
                   </div>
                 </div>
 
-                <a href="/lp.html?carteira=${this.data.partner.id}" target="_blank" class="btn btn-sm btn-primary" style="width: 100%; justify-content: center;">
+                <a href="${base}/lp.html?carteira=${this.data.partner.id}" target="_blank" class="btn btn-sm btn-primary" style="width: 100%; justify-content: center;">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Página Pública de Inscrição
                 </a>
               </div>
@@ -1489,7 +1514,7 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
 
         try {
-          const res = await fetch(`/api/partners/${this.partnerId}/banking`, {
+          const res = await fetch(this.urlWithBase(`/api/partners/${this.partnerId}/banking`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chave_pix: chavePix, banco_repasse: banco }),
@@ -1527,7 +1552,8 @@
 
       copyReferralLink() {
         if (!this.data || !this.data.partner) return;
-        const url = `${window.location.origin}/lp.html?carteira=${this.data.partner.id}`;
+        const base = (window.BASE_PATH || (window.location.pathname.includes('/unycoeventos') ? '/unycoeventos' : '')).replace(/\/$/, '');
+        const url = `${window.location.origin}${base}/lp.html?carteira=${this.data.partner.id}`;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(() => {
             this.showToast('Link de indicação copiado com sucesso! Compartilhe com atletas e participantes.', 'success');
@@ -1542,7 +1568,8 @@
       shareWhatsApp() {
         if (!this.data || !this.data.partner) return;
         const p = this.data.partner;
-        const url = `${window.location.origin}/lp.html?carteira=${p.id}`;
+        const base = (window.BASE_PATH || (window.location.pathname.includes('/unycoeventos') ? '/unycoeventos' : '')).replace(/\/$/, '');
+        const url = `${window.location.origin}${base}/lp.html?carteira=${p.id}`;
         const text = encodeURIComponent(`Olá! Faça sua inscrição oficial e garanta descontos exclusivos de hospedagem nos eventos da ${p.nome_fantasia} através do link oficial:\n\n${url}`);
         window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
       },
