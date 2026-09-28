@@ -156,6 +156,13 @@ const lp = {
     const nameEl = document.getElementById('hubPartnerName');
     if (nameEl) nameEl.textContent = p.nome_fantasia;
 
+    // Vincula nome do parceiro em spans inline e modais
+    document.querySelectorAll('.hub-partner-name-inline').forEach(el => {
+      el.textContent = p.nome_fantasia;
+    });
+    const modalPartnerName = document.getElementById('selfEnrollPartnerName');
+    if (modalPartnerName) modalPartnerName.textContent = p.nome_fantasia;
+
     const catEl = document.getElementById('hubPartnerCategory');
     if (catEl) catEl.textContent = `${p.categoria || 'Academia'} • Parceiro Oficial UNYCO`;
 
@@ -541,6 +548,190 @@ const lp = {
     }
   },
 
+  // ==========================================
+  // AUTO-CADASTRO DE ALUNO / FAMILIAR NA CARTEIRA
+  // ==========================================
+  openStudentSelfEnrollModal() {
+    const modal = document.getElementById('studentSelfEnrollModal');
+    if (!modal) return;
+    
+    // Atualiza nome do parceiro no modal
+    if (this.partnerData) {
+      const partnerName = this.partnerData.nome_fantasia || 'Academia';
+      const nameEl = document.getElementById('selfEnrollPartnerName');
+      if (nameEl) nameEl.textContent = partnerName;
+    }
+
+    this.resetSelfEnrollForm();
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  },
+
+  closeStudentSelfEnrollModal() {
+    const modal = document.getElementById('studentSelfEnrollModal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+  },
+
+  handleVinculoChange(value) {
+    document.querySelectorAll('.vinculo-chip').forEach(chip => {
+      const radio = chip.querySelector('input[type="radio"]');
+      if (radio && radio.checked) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+    });
+  },
+
+  resetSelfEnrollForm() {
+    const form = document.getElementById('selfEnrollForm');
+    if (form) form.reset();
+
+    const formView = document.getElementById('selfEnrollFormView');
+    const successView = document.getElementById('selfEnrollSuccessView');
+    if (formView) formView.style.display = 'block';
+    if (successView) successView.style.display = 'none';
+
+    const btn = document.getElementById('btnSelfEnrollSubmit');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Confirmar Cadastro';
+    }
+
+    // Default Aluno / Atleta
+    const firstRadio = document.querySelector('input[name="selfEnrollVinculo"][value="Aluno / Atleta"]');
+    if (firstRadio) firstRadio.checked = true;
+    this.handleVinculoChange('Aluno / Atleta');
+  },
+
+  async handleSelfEnrollSubmit(event) {
+    event.preventDefault();
+
+    if (!this.partnerId) {
+      this.showToast('Identificador da academia não encontrado.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('btnSelfEnrollSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Realizando Cadastro...';
+
+    const vinculoChecked = document.querySelector('input[name="selfEnrollVinculo"]:checked');
+    const vinculo = vinculoChecked ? vinculoChecked.value : 'Aluno / Atleta';
+
+    const payload = {
+      nome_completo: document.getElementById('selfNome').value.trim(),
+      email: document.getElementById('selfEmail').value.trim(),
+      telefone: document.getElementById('selfTelefone').value.trim(),
+      cpf: document.getElementById('selfCpf').value.trim() || null,
+      data_nascimento: document.getElementById('selfNascimento').value || null,
+      genero: document.getElementById('selfGenero').value,
+      tamanho_camiseta: document.getElementById('selfCamiseta').value,
+      categoria_aluno: vinculo,
+      observacoes: document.getElementById('selfObservacoes').value.trim() || null,
+      evento_id: null,
+      origem_inscricao: 'CARTEIRA_BASE_PARCEIRO'
+    };
+
+    try {
+      const res = await fetch(this.urlWithBase(`/api/partners/${this.partnerId}/students`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        const student = json.data;
+        const partnerName = (this.partnerData && this.partnerData.nome_fantasia) || 'Academia';
+
+        // Mostra View de Sucesso
+        document.getElementById('selfEnrollFormView').style.display = 'none';
+        const successView = document.getElementById('selfEnrollSuccessView');
+        if (successView) successView.style.display = 'block';
+
+        const codeEl = document.getElementById('selfEnrollSuccessCode');
+        if (codeEl) codeEl.textContent = student.codigo_inscricao || 'CONFIRMADO';
+
+        const nameEl = document.getElementById('selfEnrollSuccessName');
+        if (nameEl) nameEl.textContent = student.nome_completo;
+
+        const vinculoEl = document.getElementById('selfEnrollSuccessVinculo');
+        if (vinculoEl) vinculoEl.textContent = `${vinculo} • ${partnerName}`;
+
+        const partnerSpan = document.getElementById('selfEnrollSuccessPartner');
+        if (partnerSpan) partnerSpan.textContent = partnerName;
+
+        // Configura link de WhatsApp para avisar o professor/academia
+        const waBtn = document.getElementById('btnSelfEnrollNotifyWhatsapp');
+        if (waBtn) {
+          const partnerPhone = (this.partnerData && this.partnerData.telefone) ? this.partnerData.telefone.replace(/\D/g, '') : '';
+          const phoneTarget = partnerPhone.length <= 11 ? `55${partnerPhone}` : partnerPhone;
+          const textMsg = encodeURIComponent(`Olá equipe da ${partnerName}! 🏅\n\nAcabei de realizar meu cadastro oficial (${vinculo}) através do link da nossa carteira digital.\n\n👤 *Nome:* ${student.nome_completo}\n🎫 *Código:* ${student.codigo_inscricao}\n📱 *WhatsApp:* ${student.telefone}`);
+          
+          if (partnerPhone) {
+            waBtn.href = `https://wa.me/${phoneTarget}?text=${textMsg}`;
+            waBtn.style.display = 'inline-flex';
+          } else {
+            waBtn.href = `https://api.whatsapp.com/send?text=${textMsg}`;
+            waBtn.style.display = 'inline-flex';
+          }
+        }
+
+        this.showToast('Cadastro realizado com sucesso na base oficial!', 'success');
+      } else {
+        this.showToast(json.message || 'Erro ao realizar cadastro.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Confirmar Cadastro';
+      }
+    } catch (err) {
+      console.error('Erro ao cadastrar aluno na carteira:', err);
+      this.showToast('Erro de conexão ao salvar cadastro.', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Confirmar Cadastro';
+    }
+  },
+
+  initInputMasks() {
+    // Máscara de Telefone / WhatsApp
+    const applyPhoneMask = (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.substring(0, 11);
+      if (v.length > 6) {
+        e.target.value = `(${v.substring(0, 2)}) ${v.substring(2, 7)}-${v.substring(7)}`;
+      } else if (v.length > 2) {
+        e.target.value = `(${v.substring(0, 2)}) ${v.substring(2)}`;
+      } else if (v.length > 0) {
+        e.target.value = `(${v}`;
+      }
+    };
+
+    // Máscara de CPF
+    const applyCpfMask = (e) => {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.substring(0, 11);
+      if (v.length > 9) {
+        e.target.value = `${v.substring(0, 3)}.${v.substring(3, 6)}.${v.substring(6, 9)}-${v.substring(9)}`;
+      } else if (v.length > 6) {
+        e.target.value = `${v.substring(0, 3)}.${v.substring(3, 6)}.${v.substring(6)}`;
+      } else if (v.length > 3) {
+        e.target.value = `${v.substring(0, 3)}.${v.substring(3)}`;
+      }
+    };
+
+    ['selfTelefone', 'regTelefone', 'regEmergenciaTelefone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', applyPhoneMask);
+    });
+
+    ['selfCpf', 'regCpf'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', applyCpfMask);
+    });
+  },
+
   showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
@@ -560,4 +751,5 @@ const lp = {
 
 document.addEventListener('DOMContentLoaded', () => {
   lp.init();
+  lp.initInputMasks();
 });

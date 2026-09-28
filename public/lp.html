@@ -567,6 +567,168 @@
       margin: 0;
       line-height: 1.5;
     }
+
+    /* BANNER DE CADASTRO DO ALUNO / FAMILIAR NA CARTEIRA */
+    .hub-register-student-banner {
+      background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 50%, #E0F2FE 100%);
+      border: 1.5px solid #86EFAC;
+      border-radius: var(--radius-xl);
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .hub-register-student-banner::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .hub-reg-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex: 1;
+    }
+    .hub-reg-icon {
+      width: 54px;
+      height: 54px;
+      background: #10B981;
+      color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 6px 14px rgba(16, 185, 129, 0.3);
+    }
+    .hub-reg-actions {
+      flex-shrink: 0;
+    }
+
+    /* MODAL DE AUTO-CADASTRO DO ALUNO / FAMILIAR */
+    .lp-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: lpFadeIn 0.2s ease-out;
+    }
+    @keyframes lpFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .lp-modal-box {
+      background: #FFFFFF;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      position: relative;
+      animation: lpSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes lpSlideUp {
+      from { transform: translateY(20px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .lp-modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      border-bottom: 1px solid #E2E8F0;
+      padding-bottom: 16px;
+      margin-bottom: 18px;
+    }
+    .lp-modal-icon-circle {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: #DCFCE7;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .lp-modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #94A3B8;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+      transition: color 0.15s;
+    }
+    .lp-modal-close-btn:hover {
+      color: #0F172A;
+    }
+
+    /* SELETOR DE VÍNCULO / CATEGORIA (RADIO CHIPS) */
+    .vinculo-chips-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .vinculo-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #F8FAFC;
+      border: 1.5px solid #E2E8F0;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .vinculo-chip:hover {
+      background: #F0F9FF;
+      border-color: #38BDF8;
+    }
+    .vinculo-chip input[type="radio"] {
+      accent-color: #10B981;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+    .vinculo-chip.active,
+    .vinculo-chip:has(input:checked) {
+      background: #ECFDF5;
+      border-color: #10B981;
+      color: #065F46;
+      box-shadow: 0 0 0 1px #10B981;
+    }
+    .vinculo-chip i {
+      color: #10B981;
+      font-size: 14px;
+    }
+
     @media (max-width: 768px) {
       .hub-advantages-grid {
         grid-template-columns: 1fr;
@@ -577,6 +739,25 @@
       }
       .hub-events-grid {
         grid-template-columns: 1fr;
+      }
+      .hub-register-student-banner {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+        gap: 16px;
+      }
+      .hub-reg-left {
+        align-items: flex-start;
+      }
+      .hub-reg-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .vinculo-chips-grid {
+        grid-template-columns: 1fr;
+      }
+      .lp-modal-box {
+        padding: 20px;
       }
     }
   </style>
@@ -627,6 +808,9 @@
             </div>
           </div>
           <div class="hub-partner-hero-actions">
+            <button type="button" class="btn btn-primary" onclick="lp.openStudentSelfEnrollModal()" style="background: #10B981; border-color: #10B981; color: #FFFFFF; font-weight: 700; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+              <i class="fa-solid fa-user-plus"></i> Cadastrar Aluno / Familiar
+            </button>
             <a id="hubWhatsappBtn" href="#" target="_blank" class="btn btn-whatsapp">
               <i class="fa-brands fa-whatsapp"></i> Falar com a Academia
             </a>
@@ -642,6 +826,31 @@
           <p>
             Seja bem-vindo ao portal oficial da nossa academia! Aqui você encontra todas as etapas esportivas em que estamos participando, realiza sua inscrição oficial e garante tarifas exclusivas de hospedagem na rede credenciada UNYCO para você e seus acompanhantes.
           </p>
+        </div>
+      </div>
+
+      <!-- Banner de Cadastro do Aluno / Familiar na Base Oficial -->
+      <div class="hub-register-student-banner">
+        <div class="hub-reg-left">
+          <div class="hub-reg-icon">
+            <i class="fa-solid fa-id-card-clip"></i>
+          </div>
+          <div>
+            <span class="badge" style="background: #D1FAE5; color: #065F46; font-weight: 700; font-size: 11px; margin-bottom: 6px; display: inline-block;">
+              <i class="fa-solid fa-sparkles"></i> Base Oficial de Alunos & Comunidade
+            </span>
+            <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0 0 4px 0;">
+              Cadastre-se na Base de Alunos & Familiares
+            </h3>
+            <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">
+              Faça seu cadastro para receber comunicados do professor, prioridade nas inscrições de novos torneios e condições especiais de hotéis para viagens da equipe.
+            </p>
+          </div>
+        </div>
+        <div class="hub-reg-actions">
+          <button type="button" class="btn btn-primary" onclick="lp.openStudentSelfEnrollModal()" style="background: #10B981; border-color: #10B981; color: #FFFFFF; font-weight: 700; padding: 12px 20px; font-size: 14px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+            <i class="fa-solid fa-user-plus"></i> Preencher Cadastro Rápido
+          </button>
         </div>
       </div>
 
@@ -937,6 +1146,169 @@
             </button>
             <button class="btn btn-primary flex-1" onclick="location.reload()" style="justify-content: center;">
               <i class="fa-solid fa-user-plus"></i> Nova Inscrição
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CADASTRO DE ALUNO / FAMILIAR NA CARTEIRA DO PARCEIRO -->
+  <!-- ========================================================== -->
+  <div id="studentSelfEnrollModal" class="lp-modal-backdrop" style="display: none;">
+    <div class="lp-modal-box">
+      <!-- Form View -->
+      <div id="selfEnrollFormView">
+        <div class="lp-modal-header">
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div class="lp-modal-icon-circle">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0;">Cadastro de Aluno / Familiar</h3>
+              <p style="font-size: 12px; color: #64748B; margin: 2px 0 0 0;">Base Oficial da <strong id="selfEnrollPartnerName">Academia</strong></p>
+            </div>
+          </div>
+          <button type="button" onclick="lp.closeStudentSelfEnrollModal()" class="lp-modal-close-btn">&times;</button>
+        </div>
+
+        <form id="selfEnrollForm" onsubmit="lp.handleSelfEnrollSubmit(event)">
+          <!-- Tipo de Vínculo -->
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">
+              Vínculo com a Academia *
+            </label>
+            <div class="vinculo-chips-grid">
+              <label class="vinculo-chip">
+                <input type="radio" name="selfEnrollVinculo" value="Aluno / Atleta" checked onchange="lp.handleVinculoChange(this.value)">
+                <span><i class="fa-solid fa-medal"></i> Aluno / Atleta</span>
+              </label>
+              <label class="vinculo-chip">
+                <input type="radio" name="selfEnrollVinculo" value="Pai / Mãe / Responsável" onchange="lp.handleVinculoChange(this.value)">
+                <span><i class="fa-solid fa-people-roof"></i> Pai / Mãe / Responsável</span>
+              </label>
+              <label class="vinculo-chip">
+                <input type="radio" name="selfEnrollVinculo" value="Familiar / Acompanhante" onchange="lp.handleVinculoChange(this.value)">
+                <span><i class="fa-solid fa-heart"></i> Familiar / Acompanhante</span>
+              </label>
+              <label class="vinculo-chip">
+                <input type="radio" name="selfEnrollVinculo" value="Outro / Convidado" onchange="lp.handleVinculoChange(this.value)">
+                <span><i class="fa-solid fa-user-tag"></i> Amigo / Convidado</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Nome Completo -->
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="selfNome" style="font-size: 12px; font-weight: 700; color: #334155;">Nome Completo *</label>
+            <input type="text" id="selfNome" required placeholder="Ex: Lucas Gabriel Silveira" class="form-control">
+          </div>
+
+          <!-- WhatsApp e E-mail -->
+          <div class="form-row" style="margin-bottom: 14px;">
+            <div class="form-group flex-1">
+              <label for="selfTelefone" style="font-size: 12px; font-weight: 700; color: #334155;">WhatsApp / Celular *</label>
+              <input type="text" id="selfTelefone" required placeholder="(11) 99999-9999" class="form-control">
+            </div>
+            <div class="form-group flex-1">
+              <label for="selfEmail" style="font-size: 12px; font-weight: 700; color: #334155;">E-mail *</label>
+              <input type="email" id="selfEmail" required placeholder="seuemail@exemplo.com" class="form-control">
+            </div>
+          </div>
+
+          <!-- CPF e Data de Nascimento -->
+          <div class="form-row" style="margin-bottom: 14px;">
+            <div class="form-group flex-1">
+              <label for="selfCpf" style="font-size: 12px; font-weight: 700; color: #334155;">CPF (Opcional)</label>
+              <input type="text" id="selfCpf" placeholder="000.000.000-00" class="form-control">
+            </div>
+            <div class="form-group flex-1">
+              <label for="selfNascimento" style="font-size: 12px; font-weight: 700; color: #334155;">Data de Nascimento</label>
+              <input type="date" id="selfNascimento" class="form-control">
+            </div>
+          </div>
+
+          <!-- Gênero e Tamanho da Camiseta -->
+          <div class="form-row" style="margin-bottom: 14px;">
+            <div class="form-group flex-1">
+              <label for="selfGenero" style="font-size: 12px; font-weight: 700; color: #334155;">Gênero</label>
+              <select id="selfGenero" class="form-control">
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Outro">Outro / Prefiro não informar</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label for="selfCamiseta" style="font-size: 12px; font-weight: 700; color: #334155;">Tamanho da Camiseta</label>
+              <select id="selfCamiseta" class="form-control">
+                <option value="Infantil 8">Infantil 8</option>
+                <option value="Infantil 10">Infantil 10</option>
+                <option value="Infantil 12">Infantil 12</option>
+                <option value="Infantil 14">Infantil 14</option>
+                <option value="P">P (Adulto)</option>
+                <option value="M" selected>M (Adulto)</option>
+                <option value="G">G (Adulto)</option>
+                <option value="GG">GG (Adulto)</option>
+                <option value="XG">XG (Adulto Especial)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Observações / Turma / Recado para o Professor -->
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="selfObservacoes" style="font-size: 12px; font-weight: 700; color: #334155;">
+              Turma / Modalidade / Observações (Opcional)
+            </label>
+            <input type="text" id="selfObservacoes" placeholder="Ex: Turma da noite, Faixa Azul, ou Nome do filho se for responsável" class="form-control">
+          </div>
+
+          <!-- Aceite e Termos -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-muted); cursor: pointer;">
+              <input type="checkbox" required checked style="margin-top: 3px;">
+              <span>Autorizo o envio de novidades sobre eventos esportivos, benefícios de hospedagem e comunicados da academia.</span>
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="button" onclick="lp.closeStudentSelfEnrollModal()" class="btn btn-secondary flex-1" style="justify-content: center;">
+              Cancelar
+            </button>
+            <button type="submit" id="btnSelfEnrollSubmit" class="btn btn-primary flex-1" style="justify-content: center; background: #10B981; border-color: #10B981; font-weight: 700;">
+              <i class="fa-solid fa-check-circle"></i> Confirmar Cadastro
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success State View (Inside Modal) -->
+      <div id="selfEnrollSuccessView" style="display: none; text-align: center;">
+        <div style="width: 60px; height: 60px; background: #DCFCE7; color: #16A34A; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 14px auto;">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 800; color: #0F172A; margin: 0 0 6px 0;">Cadastro Confirmado!</h3>
+        <p style="font-size: 13px; color: #64748B; margin: 0 0 18px 0;">
+          Você foi cadastrado com sucesso na base oficial de <strong id="selfEnrollSuccessPartner">Academia</strong>!
+        </p>
+
+        <div class="voucher-card" style="background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border: 1.5px solid #86EFAC; margin-bottom: 20px; text-align: center; padding: 18px;">
+          <span style="font-size: 11px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">CÓDIGO DE MATRÍCULA / REGISTRO</span>
+          <div class="voucher-code" id="selfEnrollSuccessCode" style="color: #15803D; font-size: 22px; margin: 6px 0; font-weight: 800;">ALU-0-0000-XXXX</div>
+          <p id="selfEnrollSuccessName" style="font-weight: 800; font-size: 15px; color: #0F172A; margin: 0;"></p>
+          <p id="selfEnrollSuccessVinculo" style="font-size: 12px; color: #166534; font-weight: 600; margin: 4px 0 0 0;"></p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a id="btnSelfEnrollNotifyWhatsapp" href="#" target="_blank" class="btn btn-whatsapp" style="justify-content: center; padding: 12px; font-size: 14px;">
+            <i class="fa-brands fa-whatsapp"></i> Avisar Professor no WhatsApp
+          </a>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="lp.resetSelfEnrollForm()" class="btn btn-secondary flex-1" style="justify-content: center;">
+              <i class="fa-solid fa-user-plus"></i> Cadastrar Outro
+            </button>
+            <button type="button" onclick="lp.closeStudentSelfEnrollModal()" class="btn btn-primary flex-1" style="justify-content: center;">
+              <i class="fa-solid fa-calendar-check"></i> Ver Eventos
             </button>
           </div>
         </div>
