@@ -566,15 +566,15 @@ exports.getPartnerPortalSummary = async (req, res) => {
     `;
     const hotelLeadsRes = await db.query(hotelLeadsQuery, [id]);
 
-    // 5. Inscrições geradas pela Carteira / Link de Indicação do parceiro
+    // 5. Inscrições geradas pela Carteira / Link de Indicação do parceiro ou Cadastradas Diretamente na Carteira
     const walletQuery = `
       SELECT 
         i.*,
-        e.nome AS evento_nome,
-        e.modalidade AS evento_modalidade,
+        COALESCE(e.nome, 'Carteira Geral / Promoções Internas') AS evento_nome,
+        COALESCE(e.modalidade, i.categoria_aluno, 'Atleta / Aluno') AS evento_modalidade,
         e.data_inicio AS evento_data_inicio
       FROM inscricoes_evento i
-      JOIN eventos e ON e.id = i.evento_id
+      LEFT JOIN eventos e ON e.id = i.evento_id
       WHERE i.parceiro_indicador_id = $1
       ORDER BY i.created_at DESC
     `;
@@ -658,6 +658,189 @@ exports.updatePartnerBanking = async (req, res) => {
   } catch (error) {
     console.error('Erro ao atualizar dados bancários do parceiro:', error);
     return res.status(500).json({ success: false, message: 'Erro ao atualizar dados de repasse', error: error.message });
+  }
+};
+
+// Cadastrar Aluno/Indicação diretamente na Carteira do Parceiro (Independente de Evento)
+exports.enrollStudent = async (req, res) => {
+  try {
+    const { id: partnerId } = req.params;
+    const {
+      nome_completo,
+      cpf,
+      email,
+      telefone,
+      data_nascimento,
+      genero,
+      tamanho_camiseta,
+      evento_id,
+      categoria_aluno,
+      observacoes,
+      precisa_hospedagem,
+      hospedagem_hotel_id,
+      hospedagem_qtd_pessoas,
+    } = req.body;
+
+    if (!nome_completo || !email || !telefone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nome completo, e-mail e WhatsApp/telefone são obrigatórios.',
+      });
+    }
+
+    // Verificar se parceiro existe
+    const partnerRes = await db.query('SELECT * FROM parceiros WHERE id = $1', [partnerId]);
+    if (partnerRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parceiro não encontrado.' });
+    }
+    const partner = partnerRes.rows[0];
+
+    let eventData = null;
+    let valorInscricao = 0.00;
+    let comissaoParceiroInscricao = 0.00;
+    let finalEventoId = (evento_id && evento_id !== '' && evento_id !== 'null') ? parseInt(evento_id, 10) : null;
+
+    if (finalEventoId) {
+      const eventRes = await db.query('SELECT * FROM eventos WHERE id = $1', [finalEventoId]);
+      if (eventRes.rows.length > 0) {
+        eventData = eventRes.rows[0];
+        valorInscricao = eventData.valor_inscricao ? parseFloat(eventData.valor_inscricao) : 0.00;
+        const pct = parseFloat(partner.comissao_inscricao_pct || 10.00);
+        comissaoParceiroInscricao = (valorInscricao * (pct / 100.00)).toFixed(2);
+      } else {
+        finalEventoId = null;
+      }
+    }
+
+    // Gerar código único de matrícula/carteira (ex: ALU-5-0001-A4F2 ou UNY-2026-XXXX)
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const countRes = await db.query('SELECT COUNT(id)::int AS count FROM inscricoes_evento WHERE parceiro_indicador_id = $1', [partnerId]);
+    const seq = ((countRes.rows[0]?.count || 0) + 1).toString().padStart(4, '0');
+    const codigo_inscricao = finalEventoId 
+      ? `UNY-2026-${seq}-${randomSuffix}` 
+      : `ALU-${partnerId}-${seq}-${randomSuffix}`;
+
+    const origem = finalEventoId ? 'CADASTRO_DIRETO_PARCEIRO' : 'CARTEIRA_BASE_PARCEIRO';
+
+    const insertQuery = `
+      INSERT INTO inscricoes_evento (
+        evento_id, codigo_inscricao, nome_completo, cpf, email, telefone,
+        data_nascimento, genero, tamanho_camiseta,
+        precisa_hospedagem, hospedagem_hotel_id, hospedagem_qtd_pessoas,
+        status_pagamento, valor_pago, comissao_parceiro_inscricao,
+        parceiro_indicador_id, origem_inscricao, observacoes, categoria_aluno
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      RETURNING *
+    `;
+
+    const insertValues = [
+      finalEventoId,
+      codigo_inscricao,
+      nome_completo.trim(),
+      cpf ? cpf.trim() : null,
+      email.trim().toLowerCase(),
+      telefone.trim(),
+      data_nascimento || null,
+      genero || null,
+      tamanho_camiseta || 'M',
+      Boolean(precisa_hospedagem && finalEventoId),
+      (precisa_hospedagem && finalEventoId) ? (hospedagem_hotel_id || null) : null,
+      (precisa_hospedagem && finalEventoId) ? (hospedagem_qtd_pessoas || 1) : 1,
+      'Confirmado',
+      valorInscricao,
+      comissaoParceiroInscricao,
+      partner.id,
+      origem,
+      observacoes ? observacoes.trim() : null,
+      categoria_aluno ? categoria_aluno.trim() : null
+    ];
+
+    const result = await db.query(insertQuery, insertValues);
+    const student = result.rows[0];
+
+    // Lead de hospedagem opcional caso haja evento e hotel selecionados
+    let hotelLead = null;
+    if (finalEventoId && (precisa_hospedagem || hospedagem_hotel_id)) {
+      try {
+        let hotelTarifa = 350.00;
+        let hotelNome = 'Hotel Curadoria UNYCO';
+        if (hospedagem_hotel_id) {
+          const hRes = await db.query('SELECT nome, tarifa_atleta_desconto, tarifa_media FROM hoteis_curadoria WHERE id = $1', [hospedagem_hotel_id]);
+          if (hRes.rows.length > 0) {
+            hotelTarifa = parseFloat(hRes.rows[0].tarifa_atleta_desconto || hRes.rows[0].tarifa_media || 350.00);
+            hotelNome = hRes.rows[0].nome;
+          }
+        }
+
+        const qtdPessoas = parseInt(hospedagem_qtd_pessoas || 1, 10);
+        const qtdQuartos = Math.max(1, Math.ceil(qtdPessoas / 2));
+        const valorEstimadoHotel = (hotelTarifa * qtdQuartos * 2).toFixed(2);
+        const comissaoHotelPct = parseFloat(partner.comissao_hotelaria_pct || 8.00);
+        const comissaoParceiroHotel = (parseFloat(valorEstimadoHotel) * (comissaoHotelPct / 100.00)).toFixed(2);
+
+        const leadRes = await db.query(`
+          INSERT INTO reservas_hotel_leads (
+            evento_id, parceiro_id, hotel_id, inscricao_id, nome_hospede, email, telefone,
+            tipo_publico, qtd_hospedes, qtd_quartos, valor_total_estimado,
+            comissao_parceiro_pct, comissao_parceiro_valor, status, observacoes
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'Pendente', $14)
+          RETURNING *
+        `, [
+          finalEventoId,
+          partner.id,
+          hospedagem_hotel_id || null,
+          student.id,
+          nome_completo.trim(),
+          email.trim().toLowerCase(),
+          telefone.trim(),
+          'Aluno da Carteira',
+          qtdPessoas,
+          qtdQuartos,
+          valorEstimadoHotel,
+          comissaoHotelPct,
+          comissaoParceiroHotel,
+          `Lead de hospedagem gerado pelo parceiro (${codigo_inscricao}) - Hotel: ${hotelNome}`
+        ]);
+        hotelLead = leadRes.rows[0];
+      } catch (hErr) {
+        console.error('Erro ao gerar lead de hotel para aluno:', hErr);
+      }
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: finalEventoId 
+        ? `Aluno inscrito com sucesso no evento "${eventData?.nome}"!` 
+        : 'Aluno cadastrado com sucesso na sua Carteira Oficial!',
+      data: {
+        ...student,
+        evento_nome: eventData ? eventData.nome : 'Carteira Geral / Promoções Internas',
+        hotel_lead: hotelLead,
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao cadastrar aluno na carteira do parceiro:', error);
+    return res.status(500).json({ success: false, message: 'Erro ao cadastrar aluno', error: error.message });
+  }
+};
+
+// Excluir ou remover aluno da carteira pelo próprio parceiro
+exports.deleteStudent = async (req, res) => {
+  try {
+    const { id: partnerId, studentId } = req.params;
+    const result = await db.query(
+      'DELETE FROM inscricoes_evento WHERE id = $1 AND parceiro_indicador_id = $2 RETURNING *',
+      [studentId, partnerId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Aluno não encontrado na sua carteira.' });
+    }
+    return res.json({ success: true, message: 'Aluno removido da carteira com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao remover aluno da carteira:', error);
+    return res.status(500).json({ success: false, message: 'Erro ao remover aluno', error: error.message });
   }
 };
 

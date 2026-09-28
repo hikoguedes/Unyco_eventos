@@ -846,42 +846,42 @@
   </div>
 
   <!-- ========================================================== -->
-  <!-- MODAL: INSCRIÇÃO DIRETA DE ALUNO / INDICAÇÃO PELO PARCEIRO -->
+  <!-- MODAL: CADASTRO DE ALUNO NA CARTEIRA DO PARCEIRO -->
   <!-- ========================================================== -->
   <div id="enrollModal" class="login-modal-backdrop" style="display: none; z-index: 10000;">
-    <div class="login-modal-box" style="max-width: 660px; text-align: left; padding: 24px;">
+    <div class="login-modal-box" style="max-width: 680px; text-align: left; padding: 24px;">
       <div class="login-modal-header" style="text-align: left; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 14px; margin-bottom: 16px;">
         <div style="display: flex; gap: 14px; align-items: center;">
           <div class="login-icon-circle" style="width: 46px; height: 46px; font-size: 20px; margin: 0; background: #DCFCE7; color: #166534;"><i class="fa-solid fa-user-plus"></i></div>
           <div>
-            <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0;">Inscrever Aluno / Nova Indicação</h3>
-            <p style="font-size: 12px; color: #64748B; margin: 2px 0 0 0;">Cadastre um atleta ou aluno diretamente na sua carteira de parceiro.</p>
+            <h3 style="font-size: 18px; font-weight: 800; color: #0F172A; margin: 0;">Cadastrar Aluno na Minha Carteira</h3>
+            <p style="font-size: 12px; color: #64748B; margin: 2px 0 0 0;">Crie sua base de alunos e atletas para promoções internas, avisos e inscrições.</p>
           </div>
         </div>
         <button type="button" onclick="portal.closeEnrollModal()" style="background: none; border: none; font-size: 24px; color: #94A3B8; cursor: pointer; line-height: 1;">&times;</button>
       </div>
 
       <form id="partnerEnrollForm" onsubmit="portal.submitPartnerEnrollment(event)">
-        <!-- Seleção do Evento -->
+        <!-- Seleção do Evento (Opcional) -->
         <div class="form-group" style="margin-bottom: 14px;">
-          <label for="enrollEventSelect"><i class="fa-solid fa-calendar-check" style="color: #0284C7;"></i> Selecione o Evento Esportivo *</label>
-          <select id="enrollEventSelect" class="form-control" required onchange="portal.handleEnrollEventChange(this.value)">
-            <option value="">Selecione o evento...</option>
+          <label for="enrollEventSelect"><i class="fa-solid fa-trophy" style="color: #0284C7;"></i> Vincular a um Evento Esportivo (Opcional)</label>
+          <select id="enrollEventSelect" class="form-control" onchange="portal.handleEnrollEventChange(this.value)">
+            <option value="">⭐ Sem evento vinculado (Adicionar à Minha Base Geral / Promoções Internas)</option>
           </select>
-          <small id="enrollEventPriceNotice" style="display: block; font-size: 11.5px; color: #059669; font-weight: 700; margin-top: 5px;"></small>
+          <small id="enrollEventPriceNotice" style="display: block; font-size: 12px; color: #0284C7; font-weight: 600; margin-top: 5px;"></small>
         </div>
 
         <!-- Nome Completo -->
         <div class="form-group" style="margin-bottom: 14px;">
-          <label for="enrollNome">Nome Completo do Aluno / Participante *</label>
+          <label for="enrollNome">Nome Completo do Aluno / Atleta *</label>
           <input type="text" id="enrollNome" class="form-control" required placeholder="Ex: Lucas Gabriel Silveira">
         </div>
 
         <!-- CPF e Data de Nascimento -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="enrollCpf">CPF *</label>
-            <input type="text" id="enrollCpf" class="form-control" required placeholder="000.000.000-00">
+            <label for="enrollCpf">CPF</label>
+            <input type="text" id="enrollCpf" class="form-control" placeholder="000.000.000-00">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="enrollNascimento">Data de Nascimento</label>
@@ -892,7 +892,7 @@
         <!-- E-mail e WhatsApp -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="enrollEmail">E-mail do Participante *</label>
+            <label for="enrollEmail">E-mail *</label>
             <input type="email" id="enrollEmail" class="form-control" required placeholder="aluno@email.com">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
@@ -901,15 +901,11 @@
           </div>
         </div>
 
-        <!-- Gênero e Tamanho da Camiseta -->
+        <!-- Categoria/Modalidade Interna e Tamanho da Camiseta -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="enrollGenero">Gênero</label>
-            <select id="enrollGenero" class="form-control">
-              <option value="Masculino">Masculino</option>
-              <option value="Feminino">Feminino</option>
-              <option value="Outro">Outro / Não informar</option>
-            </select>
+            <label for="enrollCategoriaAluno">Modalidade / Turma / Categoria</label>
+            <input type="text" id="enrollCategoriaAluno" class="form-control" placeholder="Ex: Taekwondo, Corrida, Aluno VIP, Turma Noite">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label for="enrollCamiseta">Tamanho da Camiseta / Kit</label>
@@ -923,8 +919,14 @@
           </div>
         </div>
 
-        <!-- Opção de Hospedagem Curada UNYCO -->
-        <div style="background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 18px;">
+        <!-- Observações / Notas Internas -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="enrollObservacoes">Observações / Notas Internas da Carteira (Opcional)</label>
+          <input type="text" id="enrollObservacoes" class="form-control" placeholder="Ex: Indicado por professor Carlos, interessado na Maratona 2027">
+        </div>
+
+        <!-- Opção de Hospedagem Curada UNYCO (Visível apenas quando evento é selecionado) -->
+        <div id="enrollHotelContainer" style="display: none; background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 18px;">
           <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0369A1; cursor: pointer; margin-bottom: 6px;">
             <input type="checkbox" id="enrollHospedagemCheck" onchange="portal.toggleEnrollHotelFields(this.checked)">
             <span><i class="fa-solid fa-hotel"></i> Incluir solicitação de reserva de Hotel com desconto oficial</span>
@@ -953,8 +955,8 @@
         <!-- Ações do Modal -->
         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #E2E8F0; padding-top: 14px;">
           <button type="button" class="btn btn-secondary" onclick="portal.closeEnrollModal()">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btnSubmitEnroll" style="font-weight: 700;">
-            <i class="fa-solid fa-check"></i> Concluir Inscrição
+          <button type="submit" class="btn btn-primary" id="btnSubmitEnroll" style="font-weight: 700; background: #10B981; border-color: #10B981;">
+            <i class="fa-solid fa-user-plus"></i> Salvar na Carteira
           </button>
         </div>
       </form>
@@ -972,8 +974,8 @@
         </div>
       </div>
       <div class="nav-actions">
-        <button class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" title="Inscrever Novo Aluno / Indicação" style="background: #10B981; border-color: #10B981; color: #FFFFFF; font-weight: 700;">
-          <i class="fa-solid fa-user-plus"></i> <span class="hide-mobile">+ Inscrever Aluno</span>
+        <button class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" title="Cadastrar Aluno na Minha Carteira" style="background: #10B981; border-color: #10B981; color: #FFFFFF; font-weight: 700;">
+          <i class="fa-solid fa-user-plus"></i> <span class="hide-mobile">+ Cadastrar Aluno</span>
         </button>
         <button class="btn btn-sm btn-secondary" onclick="portal.copyReferralLink()" title="Copiar Link da Carteira / Indicação">
           <i class="fa-solid fa-link"></i> <span class="hide-mobile">Copiar Link</span>
@@ -1084,7 +1086,7 @@
         <i class="fa-solid fa-bed"></i> Reservas de Hotelaria <span class="tab-badge" id="badgeQtdReservas">0</span>
       </button>
       <button class="tab-btn" onclick="portal.switchTab('tab-inscricoes')">
-        <i class="fa-solid fa-ticket"></i> Inscrições de Atletas <span class="tab-badge" id="badgeQtdInscricoes">0</span>
+        <i class="fa-solid fa-users"></i> Minha Carteira de Alunos <span class="tab-badge" id="badgeQtdInscricoes">0</span>
       </button>
       <button class="tab-btn" onclick="portal.switchTab('tab-eventos')">
         <i class="fa-solid fa-calendar-days"></i> Meus Eventos & Hotéis <span class="tab-badge" id="badgeQtdEventos">0</span>
@@ -1132,20 +1134,20 @@
       </div>
     </div>
 
-    <!-- ABA 2: INSCRIÇÕES DE ATLETAS -->
+    <!-- ABA 2: MINHA CARTEIRA DE ALUNOS & INDICAÇÕES -->
     <div id="tab-inscricoes" class="tab-pane">
       <div class="content-box">
         <div class="content-box-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
             <div class="content-box-title">
-              <i class="fa-solid fa-users" style="color: #10B981;"></i> Atletas e Alunos Inscritos
+              <i class="fa-solid fa-users" style="color: #10B981;"></i> Carteira de Alunos & Base de Contatos
             </div>
             <span style="font-size: 12px; color: var(--text-muted);">
-              Inscrições realizadas pelos seus links de divulgação ou cadastradas diretamente por você
+              Sua base de atletas e alunos cadastrados para promoções internas, avisos e inscrições em eventos
             </span>
           </div>
           <button type="button" class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #10B981; border-color: #10B981;">
-            <i class="fa-solid fa-user-plus"></i> + Inscrever Aluno / Indicação
+            <i class="fa-solid fa-user-plus"></i> + Cadastrar Aluno na Carteira
           </button>
         </div>
 
@@ -1153,20 +1155,20 @@
           <table class="portal-table">
             <thead>
               <tr>
-                <th>Atleta / Aluno</th>
-                <th>Evento Esportivo</th>
-                <th>Código / Categoria</th>
-                <th>Data Inscrição</th>
-                <th>Valor Inscrição</th>
-                <th>Sua Comissão</th>
-                <th>Pagamento</th>
+                <th>Aluno / Contato</th>
+                <th>Vínculo / Evento</th>
+                <th>Código / Matrícula</th>
+                <th>Data Cadastro</th>
+                <th>Comissão / Retorno</th>
+                <th>Status</th>
+                <th style="text-align: right;">Ações</th>
               </tr>
             </thead>
             <tbody id="tableInscricoesBody">
               <tr>
                 <td colspan="7" class="empty-state">
                   <i class="fa-solid fa-spinner fa-spin"></i>
-                  <p>Carregando inscrições...</p>
+                  <p>Carregando carteira de alunos...</p>
                 </td>
               </tr>
             </tbody>
@@ -1623,8 +1625,8 @@
             <tr>
               <td colspan="7" class="empty-state">
                 <i class="fa-solid fa-users"></i>
-                <p>Nenhuma inscrição de aluno/atleta registrada pelo seu link ainda.</p>
-                <small style="color: var(--text-dim);">Compartilhe o seu link exclusivo nas suas redes e grupos de WhatsApp!</small>
+                <p>Nenhum aluno ou participante cadastrado na sua carteira ainda.</p>
+                <small style="color: var(--text-dim);">Clique em "<strong>+ Cadastrar Aluno na Carteira</strong>" para criar sua base própria de contatos e promoções!</small>
               </td>
             </tr>
           `;
@@ -1635,35 +1637,63 @@
           const dateStr = i.created_at ? new Date(i.created_at).toLocaleDateString('pt-BR') : '--';
           const valInscricao = parseFloat(i.valor_pago || 0);
           const valComissao = parseFloat(i.comissao_parceiro_inscricao || 0);
-          const isPago = i.status_pagamento === 'Confirmado';
+          const hasEvent = Boolean(i.evento_id);
+          const cleanPhone = (i.telefone || '').replace(/\D/g, '');
 
           return `
             <tr>
               <td>
-                <strong>${this.escapeHtml(i.nome_completo || 'Participante')}</strong>
-                <div style="font-size: 11.5px; color: var(--text-muted);">
-                  <i class="fa-solid fa-envelope"></i> ${this.escapeHtml(i.email || '')} • 
-                  <i class="fa-solid fa-phone"></i> ${this.escapeHtml(i.telefone || '')}
+                <strong>${this.escapeHtml(i.nome_completo || 'Aluno / Participante')}</strong>
+                <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">
+                  <i class="fa-solid fa-envelope"></i> ${this.escapeHtml(i.email || 'Não informado')} • 
+                  <i class="fa-solid fa-phone"></i> ${this.escapeHtml(i.telefone || 'Não informado')}
                 </div>
+                ${i.cpf ? `<div style="font-size: 11px; color: #64748B;"><i class="fa-solid fa-id-card"></i> CPF: ${this.escapeHtml(i.cpf)}</div>` : ''}
+                ${i.observacoes ? `<div style="font-size: 11px; color: #D97706; margin-top: 2px;"><i class="fa-solid fa-note-sticky"></i> ${this.escapeHtml(i.observacoes)}</div>` : ''}
               </td>
               <td>
-                <strong style="color: #0284C7;">${this.escapeHtml(i.evento_nome || 'Evento')}</strong>
-                <div style="font-size: 11px; color: var(--text-muted);">${this.escapeHtml(i.evento_modalidade || 'Competição')}</div>
+                ${hasEvent ? `
+                  <strong style="color: #0284C7;"><i class="fa-solid fa-trophy"></i> ${this.escapeHtml(i.evento_nome || 'Evento')}</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">${this.escapeHtml(i.evento_modalidade || 'Competição')}</div>
+                ` : `
+                  <span class="status-pill status-confirmed" style="background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD; font-size: 11px;">
+                    <i class="fa-solid fa-address-book"></i> Carteira Geral / Promoções
+                  </span>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    ${this.escapeHtml(i.categoria_aluno || 'Base de Alunos')}
+                  </div>
+                `}
               </td>
               <td>
-                <span style="font-family: monospace; font-size: 11px; background: #E2E8F0; padding: 2px 6px; border-radius: 4px;">
-                  ${this.escapeHtml(i.codigo_inscricao || 'INS-000')}
+                <span style="font-family: monospace; font-size: 11px; background: #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 600;">
+                  ${this.escapeHtml(i.codigo_inscricao || 'ALU-000')}
                 </span>
+                ${i.tamanho_camiseta ? `<div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">Kit: Tam. ${this.escapeHtml(i.tamanho_camiseta)}</div>` : ''}
               </td>
               <td>${dateStr}</td>
-              <td><strong>R$ ${valInscricao.toFixed(2).replace('.', ',')}</strong></td>
               <td>
-                <strong style="color: #059669; font-size: 14px;">R$ ${valComissao.toFixed(2).replace('.', ',')}</strong>
+                ${hasEvent ? `
+                  <strong style="color: #059669; font-size: 14px;">R$ ${valComissao.toFixed(2).replace('.', ',')}</strong>
+                  <span style="font-size: 10.5px; color: var(--text-dim); display: block;">Inscr: R$ ${valInscricao.toFixed(2).replace('.', ',')}</span>
+                ` : `
+                  <span style="font-size: 12px; font-weight: 700; color: #0369A1;">Base Própria</span>
+                  <span style="font-size: 10.5px; color: var(--text-dim); display: block;">Promoções Internas</span>
+                `}
               </td>
               <td>
-                <span class="status-pill ${isPago ? 'status-confirmed' : 'status-pending'}">
-                  ${isPago ? '<i class="fa-solid fa-check"></i> Confirmado' : '<i class="fa-solid fa-clock"></i> Pendente'}
+                <span class="status-pill status-confirmed">
+                  <i class="fa-solid fa-check"></i> Ativo na Base
                 </span>
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                ${cleanPhone ? `
+                  <a href="https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${encodeURIComponent('Olá ' + (i.nome_completo || 'Aluno') + '! Entramos em contato através da ' + (this.data.partner?.nome_fantasia || 'nossa equipe') + '.')}" target="_blank" class="btn btn-sm btn-success" title="Enviar WhatsApp Direto" style="padding: 5px 9px; font-size: 12px; margin-right: 4px;">
+                    <i class="fa-brands fa-whatsapp"></i>
+                  </a>
+                ` : ''}
+                <button type="button" onclick="portal.deleteStudent(${i.id}, '${this.escapeHtml(i.nome_completo || 'Aluno')}')" class="btn btn-sm btn-secondary" title="Remover aluno da carteira" style="padding: 5px 9px; font-size: 12px; color: #DC2626; border-color: #FECACA; background: #FEF2F2;">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
               </td>
             </tr>
           `;
@@ -1824,24 +1854,21 @@
       },
 
       openEnrollModal(preselectedEventId = null) {
-        if (!this.data || !this.data.events || this.data.events.length === 0) {
-          this.showToast('Nenhum evento esportivo disponível para inscrição no momento.', 'error');
-          return;
-        }
-
         const select = document.getElementById('enrollEventSelect');
-        if (!select) return;
+        if (select) {
+          const events = (this.data && this.data.events) ? this.data.events : [];
+          select.innerHTML = '<option value="">⭐ Sem evento vinculado (Adicionar à Minha Base Geral / Promoções Internas)</option>' + 
+            events.map(e => `
+              <option value="${e.id}" ${preselectedEventId && parseInt(preselectedEventId, 10) === e.id ? 'selected' : ''}>
+                🏆 ${this.escapeHtml(e.nome)} (${this.escapeHtml(e.modalidade || 'Competição')} - R$ ${parseFloat(e.valor_inscricao || 0).toFixed(2)})
+              </option>
+            `).join('');
 
-        select.innerHTML = '<option value="">Selecione o evento esportivo...</option>' + 
-          this.data.events.map(e => `
-            <option value="${e.id}" ${preselectedEventId && parseInt(preselectedEventId, 10) === e.id ? 'selected' : ''}>
-              ${this.escapeHtml(e.nome)} (${this.escapeHtml(e.modalidade || 'Competição')} - R$ ${parseFloat(e.valor_inscricao || 0).toFixed(2)})
-            </option>
-          `).join('');
-
-        // Se tiver apenas 1 evento e nenhum pré-selecionado, já seleciona ele
-        if (!preselectedEventId && this.data.events.length === 1) {
-          select.value = this.data.events[0].id;
+          if (preselectedEventId) {
+            select.value = preselectedEventId;
+          } else {
+            select.value = '';
+          }
         }
 
         // Limpar campos
@@ -1850,7 +1877,10 @@
         document.getElementById('enrollNascimento').value = '';
         document.getElementById('enrollEmail').value = '';
         document.getElementById('enrollTelefone').value = '';
-        document.getElementById('enrollGenero').value = 'Masculino';
+        const catInput = document.getElementById('enrollCategoriaAluno');
+        if (catInput) catInput.value = '';
+        const obsInput = document.getElementById('enrollObservacoes');
+        if (obsInput) obsInput.value = '';
         document.getElementById('enrollCamiseta').value = 'M';
         
         const checkHosp = document.getElementById('enrollHospedagemCheck');
@@ -1858,7 +1888,7 @@
         this.toggleEnrollHotelFields(false);
 
         // Atualizar hotéis e aviso de preço
-        this.handleEnrollEventChange(select.value);
+        this.handleEnrollEventChange(select ? select.value : '');
 
         document.getElementById('enrollModal').style.display = 'flex';
       },
@@ -1869,19 +1899,24 @@
 
       handleEnrollEventChange(eventId) {
         const notice = document.getElementById('enrollEventPriceNotice');
+        const hotelContainer = document.getElementById('enrollHotelContainer');
         const hotelSelect = document.getElementById('enrollHotelSelect');
 
-        if (!eventId || !this.data || !this.data.events) {
-          if (notice) notice.textContent = '';
-          if (hotelSelect) hotelSelect.innerHTML = '<option value="">Qualquer hotel credenciado com desconto</option>';
+        if (!eventId) {
+          if (notice) {
+            notice.innerHTML = `
+              <i class="fa-solid fa-users" style="color: #0369A1;"></i> Aluno cadastrado diretamente na sua <strong>Carteira Oficial</strong> para ações, promoções internas e futuras divulgações.
+            `;
+          }
+          if (hotelContainer) hotelContainer.style.display = 'none';
           return;
         }
 
-        const ev = this.data.events.find(e => e.id === parseInt(eventId, 10));
+        const ev = (this.data && this.data.events) ? this.data.events.find(e => e.id === parseInt(eventId, 10)) : null;
         if (!ev) return;
 
         const val = parseFloat(ev.valor_inscricao || 0);
-        const pct = parseFloat(this.data.partner.comissao_inscricao_pct || 10);
+        const pct = parseFloat(this.data?.partner?.comissao_inscricao_pct || 10);
         const comissao = (val * (pct / 100)).toFixed(2);
 
         if (notice) {
@@ -1890,6 +1925,8 @@
             Sua comissão gerada nesta inscrição: <strong style="color: #15803D;">R$ ${comissao.replace('.', ',')} (${pct.toFixed(0)}%)</strong>
           `;
         }
+
+        if (hotelContainer) hotelContainer.style.display = 'block';
 
         if (hotelSelect) {
           const hotels = ev.hoteis_vinculados || [];
@@ -1921,42 +1958,39 @@
         const nascimento = document.getElementById('enrollNascimento').value;
         const email = document.getElementById('enrollEmail').value.trim();
         const telefone = document.getElementById('enrollTelefone').value.trim();
-        const genero = document.getElementById('enrollGenero').value;
+        const categoria = document.getElementById('enrollCategoriaAluno')?.value.trim();
+        const observacoes = document.getElementById('enrollObservacoes')?.value.trim();
         const camiseta = document.getElementById('enrollCamiseta').value;
-        const checkHosp = document.getElementById('enrollHospedagemCheck').checked;
+        const checkHosp = document.getElementById('enrollHospedagemCheck')?.checked;
         const hotelId = document.getElementById('enrollHotelSelect')?.value;
         const hospedesQtd = document.getElementById('enrollHospedesQtd')?.value;
 
-        if (!eventId) {
-          this.showToast('Selecione o evento esportivo para a inscrição.', 'error');
-          return;
-        }
-        if (!nome || !cpf || !email || !telefone) {
-          this.showToast('Preencha os campos obrigatórios (Nome, CPF, E-mail e WhatsApp).', 'error');
+        if (!nome || !email || !telefone) {
+          this.showToast('Preencha os campos obrigatórios (Nome, E-mail e WhatsApp).', 'error');
           return;
         }
 
         const btn = document.getElementById('btnSubmitEnroll');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cadastrando Inscrição...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando Aluno...';
 
         try {
           const payload = {
             nome_completo: nome,
-            cpf: cpf,
+            cpf: cpf || null,
             email: email,
             telefone: telefone,
             data_nascimento: nascimento || null,
-            genero: genero,
             tamanho_camiseta: camiseta,
-            precisa_hospedagem: checkHosp,
-            hospedagem_hotel_id: checkHosp && hotelId ? parseInt(hotelId, 10) : null,
-            hospedagem_qtd_pessoas: checkHosp ? parseInt(hospedesQtd || 1, 10) : 1,
-            parceiro_indicador_id: this.partnerId,
-            origem_inscricao: 'CADASTRO_DIRETO_PARCEIRO'
+            evento_id: eventId ? parseInt(eventId, 10) : null,
+            categoria_aluno: categoria || null,
+            observacoes: observacoes || null,
+            precisa_hospedagem: Boolean(eventId && checkHosp),
+            hospedagem_hotel_id: (eventId && checkHosp && hotelId) ? parseInt(hotelId, 10) : null,
+            hospedagem_qtd_pessoas: (eventId && checkHosp) ? parseInt(hospedesQtd || 1, 10) : 1,
           };
 
-          const res = await fetch(this.urlWithBase(`/api/events/${eventId}/registrations`), {
+          const res = await fetch(this.urlWithBase(`/api/partners/${this.partnerId}/students`), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1966,23 +2000,45 @@
 
           if (json.success) {
             this.closeEnrollModal();
-            const cod = json.data?.codigo_inscricao || 'CONFIRMADA';
-            this.showToast(`Inscrição do aluno "${nome}" realizada com sucesso! Código: ${cod}`, 'success');
+            const cod = json.data?.codigo_inscricao || 'SALVO';
+            this.showToast(json.message || `Aluno "${nome}" cadastrado com sucesso! Matrícula: ${cod}`, 'success');
             
             // Recarrega todos os dados do portal para atualizar na hora os KPIs e tabelas
             await this.loadPortalData();
             
-            // Alterna para a aba de inscrições para ver o aluno cadastrado
+            // Alterna para a aba da carteira de alunos
             this.switchTab('tab-inscricoes');
           } else {
-            this.showToast(json.message || 'Erro ao realizar inscrição.', 'error');
+            this.showToast(json.message || 'Erro ao cadastrar aluno.', 'error');
           }
         } catch (err) {
-          console.error('Erro na inscrição do parceiro:', err);
+          console.error('Erro no cadastro do aluno:', err);
           this.showToast('Erro ao comunicar com o servidor. Tente novamente.', 'error');
         } finally {
           btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-check"></i> Concluir Inscrição';
+          btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Salvar na Carteira';
+        }
+      },
+
+      async deleteStudent(studentId, studentName) {
+        if (!confirm(`Deseja remover "${studentName}" da sua carteira de alunos?`)) {
+          return;
+        }
+
+        try {
+          const res = await fetch(this.urlWithBase(`/api/partners/${this.partnerId}/students/${studentId}`), {
+            method: 'DELETE'
+          });
+          const json = await res.json();
+          if (json.success) {
+            this.showToast(`Aluno "${studentName}" removido da sua carteira.`, 'info');
+            await this.loadPortalData();
+          } else {
+            this.showToast(json.message || 'Erro ao remover aluno.', 'error');
+          }
+        } catch (err) {
+          console.error('Erro ao remover aluno:', err);
+          this.showToast('Erro de comunicação ao remover aluno.', 'error');
         }
       },
 

@@ -8,6 +8,8 @@ router.post('/portal/login', partnerController.loginPortal);
 router.get('/:id/portal-summary', partnerController.getPartnerPortalSummary);
 router.put('/:id/banking', partnerController.updatePartnerBanking);
 router.put('/:id/password', partnerController.updatePartnerPassword);
+router.post('/:id/students', partnerController.enrollStudent);
+router.delete('/:id/students/:studentId', partnerController.deleteStudent);
 
 // Rotas Administrativas e Gerais
 router.get('/', partnerController.getAllPartners);
