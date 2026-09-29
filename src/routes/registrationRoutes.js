@@ -9,6 +9,9 @@ router.post('/events/:id/registrations', registrationController.registerForEvent
 // Listar inscritos de um evento
 router.get('/events/:id/registrations', registrationController.getEventRegistrations);
 
+// Listar todas as inscrições consolidadas (Relatórios e Exportação CSV)
+router.get('/registrations', registrationController.getAllRegistrations);
+
 // Consultar comprovante por código único
 router.get('/registrations/:code', registrationController.getRegistrationByCode);
 

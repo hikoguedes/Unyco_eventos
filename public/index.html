@@ -246,6 +246,10 @@
             <i class="fa-solid fa-arrows-rotate"></i>
             <span>Atualizar</span>
           </button>
+          <button class="btn btn-outline btn-sm" id="btnOpenExportHub" onclick="app.openExportHubModal()" style="border-color: #CBD5E1; color: #334155; background: #FFFFFF; font-weight: 700;" title="Central de Exportação de Planilhas CSV">
+            <i class="fa-solid fa-file-csv" style="color: #10B981;"></i>
+            <span>Exportar Relatórios</span>
+          </button>
           <button class="btn btn-outline btn-sm action-btn-user" id="btnOpenUserCreateTopbar" onclick="app.openCreateUserModal()" style="border-color: #FBCFE8; color: #BE185D; background: #FDF2F8;" title="Novo Usuário / Operador">
             <i class="fa-solid fa-user-plus"></i>
             <span>Novo Usuário</span>
@@ -365,6 +369,9 @@
               <option value="ativo">Ativos</option>
               <option value="inativo">Inativos</option>
             </select>
+            <button class="btn btn-outline" onclick="app.exportPartnersCSV()" title="Exportar Parceiros em Planilha CSV">
+              <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar CSV
+            </button>
             <button class="btn btn-primary" onclick="app.openCreatePartnerModal()">
               <i class="fa-solid fa-plus"></i> Novo Parceiro
             </button>
@@ -402,6 +409,9 @@
               <option value="dex">⚡ Apenas DEX (Disp. Extra)</option>
               <option value="normal">📅 Prazo Regular (&ge; 30 dias)</option>
             </select>
+            <button class="btn btn-outline" onclick="app.exportEventsCSV()" title="Exportar Calendário de Eventos em Planilha CSV">
+              <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar CSV
+            </button>
             <button class="btn btn-primary" onclick="app.openCreateEventModal()">
               <i class="fa-solid fa-plus"></i> Novo Evento
             </button>
@@ -429,6 +439,9 @@
               <option value="Aprovada">Aprovada</option>
               <option value="Recusada">Recusada</option>
             </select>
+            <button class="btn btn-outline" onclick="app.exportProposalsCSV()" title="Exportar Propostas Comerciais em Planilha CSV">
+              <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar CSV
+            </button>
             <button class="btn btn-primary" onclick="app.openCreateProposalModal()">
               <i class="fa-solid fa-plus"></i> Nova Proposta
             </button>
@@ -521,6 +534,9 @@
               <input type="text" id="earningsPartnerSearch" placeholder="Buscar parceiro por nome ou chave PIX...">
             </div>
             <div class="toolbar-controls">
+              <button class="btn btn-outline" onclick="app.exportEarningsExtratoCSV()" title="Exportar Extrato de Repasse Financeiro em CSV">
+                <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar Extrato (CSV)
+              </button>
               <button class="btn btn-secondary" onclick="app.loadEarningsData()">
                 <i class="fa-solid fa-arrows-rotate"></i> Atualizar Extrato
               </button>
@@ -584,6 +600,9 @@
                 <option value="Confirmada">Confirmadas</option>
                 <option value="Cancelada">Canceladas</option>
               </select>
+              <button class="btn btn-outline" onclick="app.exportHotelLeadsCSV()" title="Exportar Reservas de Hotel em CSV">
+                <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar Reservas (CSV)
+              </button>
             </div>
           </div>
 
@@ -848,9 +867,14 @@
 
         <div class="section-sub-header">
           <h4><i class="fa-solid fa-list-check"></i> Lista de Participantes (<span id="regModalTotalCount">0</span>)</h4>
-          <button class="btn btn-sm btn-outline" id="btnCopyLPLinkFromModal">
-            <i class="fa-solid fa-link"></i> Copiar Link da LP de Inscrição
-          </button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-sm btn-outline" onclick="app.exportCurrentEventRegistrationsCSV()" title="Exportar Lista de Participantes deste Evento em CSV">
+              <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar Inscritos (CSV)
+            </button>
+            <button class="btn btn-sm btn-outline" id="btnCopyLPLinkFromModal">
+              <i class="fa-solid fa-link"></i> Copiar Link da LP
+            </button>
+          </div>
         </div>
 
         <div class="partner-events-table-wrapper" id="registrationsTableWrapper">
@@ -1407,7 +1431,12 @@
           <h4 style="font-size: 15px; font-weight: 700; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
             <i class="fa-solid fa-users"></i> Alunos & Atletas Registrados (<span id="walletStudentsCount">0</span>)
           </h4>
-          <input type="text" id="walletStudentSearchInput" placeholder="Buscar aluno, CPF, email ou evento..." oninput="app.filterWalletStudents()" style="padding: 7px 12px; font-size: 12px; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); width: 280px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="app.exportCurrentWalletStudentsCSV()" title="Exportar Alunos desta Carteira em Planilha CSV">
+              <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar CSV
+            </button>
+            <input type="text" id="walletStudentSearchInput" placeholder="Buscar aluno, CPF, email ou evento..." oninput="app.filterWalletStudents()" style="padding: 7px 12px; font-size: 12px; border: 1px solid #CBD5E1; border-radius: var(--radius-sm); width: 260px;">
+          </div>
         </div>
 
         <div class="partner-events-table-wrapper" id="walletStudentsTableWrapper" style="max-height: 400px; overflow-y: auto;">
@@ -1788,6 +1817,114 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: CENTRAL DE EXPORTAÇÃO DE RELATÓRIOS (CSV)           -->
+  <!-- ========================================================== -->
+  <div class="modal-backdrop" id="exportHubModal">
+    <div class="modal-dialog modal-large" style="max-width: 860px;">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background: #DCFCE7; color: #166534;"><i class="fa-solid fa-file-csv"></i></div>
+          <div>
+            <h3>Central de Exportação de Relatórios & Planilhas (CSV)</h3>
+            <p>Exporte planilhas completas com formatação compatível com Microsoft Excel (PT-BR), Google Sheets e Apple Numbers.</p>
+          </div>
+        </div>
+        <button class="btn-close" onclick="app.closeModal('exportHubModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+          <!-- 1. Parceiros -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #E0F2FE; color: #0284C7;"><i class="fa-solid fa-handshake"></i></div>
+            <div class="export-report-content">
+              <h4>Base de Parceiros & Academias</h4>
+              <p>Lista com CNPJ, contatos, categorias, comissões configuradas e dados bancários/PIX.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportPartnersCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Parceiros (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Eventos -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #DCFCE7; color: #166534;"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="export-report-content">
+              <h4>Calendário de Eventos Esportivos</h4>
+              <p>Todos os eventos, modalidades, locais, datas, capacidade de vagas, inscritos e status DEX.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportEventsCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Eventos (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Propostas -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #FEF3C7; color: #B45309;"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="export-report-content">
+              <h4>Propostas Comerciais & Pipeline</h4>
+              <p>Fichas de propostas, estimativas de volume financeiro, comissões negociadas e status.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportProposalsCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Propostas (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Carteira Consolidada de Alunos -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #F3E8FF; color: #7C3AED;"><i class="fa-solid fa-users"></i></div>
+            <div class="export-report-content">
+              <h4>Carteira Geral de Alunos & Familiares</h4>
+              <p>Consolidado de alunos e familiares cadastrados nas carteiras de todas as academias e parceiros.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportAllWalletStudentsCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Carteira Geral (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. Reservas de Hotel -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #E0F2FE; color: #0369A1;"><i class="fa-solid fa-hotel"></i></div>
+            <div class="export-report-content">
+              <h4>Reservas de Hotelaria & Leads</h4>
+              <p>Todas as solicitações de reservas em hotéis credenciados UNYCO, valores e comissões.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportHotelLeadsCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Reservas (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- 6. Inscritos em Eventos -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #FDF2F8; color: #BE185D;"><i class="fa-solid fa-id-card-clip"></i></div>
+            <div class="export-report-content">
+              <h4>Inscritos em Eventos Esportivos</h4>
+              <p>Lista consolidada de inscrições de atletas em todas as competições e torneios realizados.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportAllRegistrationsCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Todos Inscritos (CSV)
+              </button>
+            </div>
+          </div>
+
+          <!-- 7. Extrato Financeiro de Repasses -->
+          <div class="export-report-card">
+            <div class="export-report-icon" style="background: #ECFDF5; color: #059669;"><i class="fa-solid fa-coins"></i></div>
+            <div class="export-report-content">
+              <h4>Extrato de Repasse & PIX dos Parceiros</h4>
+              <p>Valores consolidados a repassar a cada parceiro (inscrições + hotelaria) com Chave PIX.</p>
+              <button class="btn btn-sm btn-primary" onclick="app.exportEarningsExtratoCSV()">
+                <i class="fa-solid fa-download"></i> Exportar Extrato Financeiro (CSV)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('exportHubModal')">Fechar</button>
+      </div>
     </div>
   </div>
 

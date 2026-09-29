@@ -1298,13 +1298,18 @@
     <!-- ABA 1: RESERVAS DE HOTELARIA -->
     <div id="tab-hospedagem" class="tab-pane active">
       <div class="content-box">
-        <div class="content-box-header">
-          <div class="content-box-title">
-            <i class="fa-solid fa-hotel" style="color: #0284C7;"></i> Reservas de Hotelaria pelas suas Indicações
+        <div class="content-box-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div class="content-box-title">
+              <i class="fa-solid fa-hotel" style="color: #0284C7;"></i> Reservas de Hotelaria pelas suas Indicações
+            </div>
+            <span style="font-size: 12px; color: var(--text-muted);">
+              Cada atleta ou família que reserva pelo seu link gera comissão automática para você
+            </span>
           </div>
-          <span style="font-size: 12px; color: var(--text-muted);">
-            Cada atleta ou família que reserva pelo seu link gera comissão automática para você
-          </span>
+          <button type="button" class="btn btn-sm btn-outline" onclick="portal.exportHotelLeadsCSV()" title="Exportar Reservas de Hotel em CSV" style="display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar CSV
+          </button>
         </div>
 
         <div class="table-responsive">
@@ -1345,9 +1350,14 @@
               Sua base de atletas e alunos cadastrados para promoções internas, avisos e inscrições em eventos
             </span>
           </div>
-          <button type="button" class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #10B981; border-color: #10B981;">
-            <i class="fa-solid fa-user-plus"></i> + Cadastrar Aluno na Carteira
-          </button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="portal.exportWalletCSV()" title="Exportar Carteira de Alunos em CSV" style="display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar CSV
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="portal.openEnrollModal()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; background: #10B981; border-color: #10B981;">
+              <i class="fa-solid fa-user-plus"></i> + Cadastrar Aluno na Carteira
+            </button>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -1379,11 +1389,16 @@
     <!-- ABA 3: MEUS EVENTOS & HOTÉIS VINCULADOS -->
     <div id="tab-eventos" class="tab-pane">
       <div class="content-box" style="background: none; border: none; box-shadow: none;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-          <h3 style="font-size: 17px; font-weight: 800; color: #0F172A;">
-            <i class="fa-solid fa-trophy" style="color: #0284C7;"></i> Seus Eventos no Calendário Esportivo
-          </h3>
-          <span style="font-size: 12px; color: var(--text-muted);">Hotéis com descontos exclusivos disponíveis para cada evento</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="font-size: 17px; font-weight: 800; color: #0F172A; margin: 0;">
+              <i class="fa-solid fa-trophy" style="color: #0284C7;"></i> Seus Eventos no Calendário Esportivo
+            </h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Hotéis com descontos exclusivos disponíveis para cada evento</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" onclick="portal.exportEventsCSV()" title="Exportar Meus Eventos em CSV" style="display: inline-flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-file-csv" style="color: #10B981;"></i> Exportar Eventos (CSV)
+          </button>
         </div>
 
         <div id="eventsGridContainer" class="events-grid-portal">
@@ -2259,6 +2274,181 @@
           toast.style.transition = 'all 0.3s ease';
           setTimeout(() => toast.remove(), 300);
         }, 4000);
+      },
+
+      // ==========================================
+      // EXPORTAÇÃO DE DADOS EM CSV (EXCEL / SHEETS)
+      // ==========================================
+      exportToCSV(filename, headers, rows) {
+        if (!rows || rows.length === 0) {
+          this.showToast('Nenhum dado encontrado para exportar.', 'info');
+          return;
+        }
+
+        const escapeCell = (val) => {
+          if (val === null || val === undefined) return '';
+          let str = String(val).trim();
+          if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+            str = '"' + str.replace(/"/g, '""') + '"';
+          }
+          return str;
+        };
+
+        const headerLine = headers.map(escapeCell).join(';');
+        const dataLines = rows.map(row => row.map(escapeCell).join(';'));
+        const csvContent = '\uFEFF' + [headerLine, ...dataLines].join('\r\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        const dateStr = new Date().toISOString().slice(0, 10);
+        link.setAttribute('download', `${filename}_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        this.showToast('Planilha CSV exportada com sucesso!', 'success');
+      },
+
+      exportWalletCSV() {
+        const list = (this.data && this.data.wallet_inscriptions) || [];
+        const partnerName = (this.data && this.data.partner && this.data.partner.nome_fantasia) || 'Parceiro';
+        
+        const headers = [
+          'Código Matrícula',
+          'Nome Completo',
+          'Vínculo / Categoria',
+          'E-mail',
+          'WhatsApp / Telefone',
+          'CPF',
+          'Data de Nascimento',
+          'Gênero',
+          'Tamanho Camiseta',
+          'Evento Vinculado',
+          'Valor Pago (R$)',
+          'Sua Comissão (R$)',
+          'Status Pagamento',
+          'Observações',
+          'Data de Cadastro'
+        ];
+
+        const rows = list.map(i => [
+          i.codigo_inscricao || '',
+          i.nome_completo || '',
+          i.categoria_aluno || 'Aluno',
+          i.email || '',
+          i.telefone || '',
+          i.cpf || '',
+          i.data_nascimento ? new Date(i.data_nascimento).toLocaleDateString('pt-BR') : '',
+          i.genero || '',
+          i.tamanho_camiseta || 'M',
+          i.evento_nome || 'Carteira Geral / Promoções Internas',
+          parseFloat(i.valor_pago || 0).toFixed(2).replace('.', ','),
+          parseFloat(i.comissao_parceiro_inscricao || 0).toFixed(2).replace('.', ','),
+          i.status_pagamento || 'Confirmado',
+          i.observacoes || '',
+          i.created_at ? new Date(i.created_at).toLocaleString('pt-BR') : ''
+        ]);
+
+        const safePartner = partnerName.replace(/[^a-zA-Z0-9]/g, '_');
+        this.exportToCSV(`Carteira_Alunos_${safePartner}`, headers, rows);
+      },
+
+      exportEventsCSV() {
+        const list = (this.data && this.data.events) || [];
+        const partnerName = (this.data && this.data.partner && this.data.partner.nome_fantasia) || 'Parceiro';
+
+        const headers = [
+          'ID Evento',
+          'Nome do Evento',
+          'Modalidade',
+          'Cidade',
+          'UF',
+          'Local',
+          'Data e Hora Início',
+          'Data e Hora Término',
+          'Capacidade Total',
+          'Total Inscritos',
+          'Vagas Restantes',
+          'Valor Inscrição (R$)',
+          'Receita Inscrições (R$)',
+          'Sua Comissão Estimada (R$)',
+          'Status',
+          'Disponibilidade Extra (DEX)'
+        ];
+
+        const rows = list.map(e => {
+          const cap = parseInt(e.capacidade || 100, 10);
+          const insc = parseInt(e.total_inscritos || 0, 10);
+          return [
+            e.id,
+            e.nome || '',
+            e.modalidade || '',
+            e.cidade || '',
+            e.estado || '',
+            e.local || '',
+            e.data_inicio ? new Date(e.data_inicio).toLocaleString('pt-BR') : '',
+            e.data_fim ? new Date(e.data_fim).toLocaleString('pt-BR') : '',
+            cap,
+            insc,
+            Math.max(0, cap - insc),
+            parseFloat(e.valor_inscricao || 0).toFixed(2).replace('.', ','),
+            parseFloat(e.receita_inscricoes || 0).toFixed(2).replace('.', ','),
+            parseFloat(e.comissao_inscricoes_evento || 0).toFixed(2).replace('.', ','),
+            e.status || 'Agendado',
+            e.is_dex ? 'Sim (DEX)' : 'Não (Prazo Regular)'
+          ];
+        });
+
+        const safePartner = partnerName.replace(/[^a-zA-Z0-9]/g, '_');
+        this.exportToCSV(`Meus_Eventos_${safePartner}`, headers, rows);
+      },
+
+      exportHotelLeadsCSV() {
+        const list = (this.data && this.data.hotel_reservations) || [];
+        const partnerName = (this.data && this.data.partner && this.data.partner.nome_fantasia) || 'Parceiro';
+
+        const headers = [
+          'ID Lead',
+          'Hóspede / Contato',
+          'E-mail',
+          'WhatsApp / Telefone',
+          'Tipo de Público',
+          'Evento Vinculado',
+          'Hotel da Curadoria',
+          'Cidade / UF Hotel',
+          'Qtd Hóspedes',
+          'Qtd Quartos',
+          'Valor Estimado (R$)',
+          'Sua Comissão (%)',
+          'Sua Comissão (R$)',
+          'Status da Reserva',
+          'Observações',
+          'Data da Solicitação'
+        ];
+
+        const rows = list.map(r => [
+          r.id,
+          r.nome_hospede || '',
+          r.email || '',
+          r.telefone || '',
+          r.tipo_publico || 'Atleta',
+          r.evento_nome || '',
+          r.hotel_nome || 'Hotel Curadoria UNYCO',
+          r.hotel_cidade || '',
+          r.qtd_hospedes || 1,
+          r.qtd_quartos || 1,
+          parseFloat(r.valor_total_estimado || 0).toFixed(2).replace('.', ','),
+          `${parseFloat(r.comissao_parceiro_pct || 8).toFixed(1)}%`,
+          parseFloat(r.comissao_parceiro_valor || 0).toFixed(2).replace('.', ','),
+          r.status || 'Pendente',
+          r.observacoes || '',
+          r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : ''
+        ]);
+
+        const safePartner = partnerName.replace(/[^a-zA-Z0-9]/g, '_');
+        this.exportToCSV(`Reservas_Hotelaria_${safePartner}`, headers, rows);
       },
 
       escapeHtml(str) {

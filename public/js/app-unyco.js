@@ -4055,6 +4055,524 @@ window.app = {
     }, 4000);
   },
 
+  // ==========================================================
+  // CENTRAL DE EXPORTAÇÃO DE RELATÓRIOS EM CSV (EXCEL / SHEETS)
+  // ==========================================================
+  exportToCSV(filename, headers, rows) {
+    if (!rows || rows.length === 0) {
+      this.showToast('Nenhum registro encontrado para exportar.', 'info');
+      return;
+    }
+
+    const escapeCell = (val) => {
+      if (val === null || val === undefined) return '';
+      let str = String(val).trim();
+      if (str.includes(';') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        str = '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const headerLine = headers.map(escapeCell).join(';');
+    const dataLines = rows.map(row => row.map(escapeCell).join(';'));
+    const csvContent = '\uFEFF' + [headerLine, ...dataLines].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.setAttribute('download', `${filename}_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    this.showToast(`Planilha "${filename}" exportada com sucesso!`, 'success');
+  },
+
+  openExportHubModal() {
+    this.openModal('exportHubModal');
+  },
+
+  exportPartnersCSV() {
+    const list = this.state.partners || [];
+    const headers = [
+      'ID',
+      'Nome Fantasia',
+      'Razão Social',
+      'CNPJ',
+      'E-mail',
+      'Telefone / WhatsApp',
+      'Responsável',
+      'Categoria',
+      'Status',
+      'Usuário de Acesso',
+      'Comissão Inscrições (%)',
+      'Comissão Hotelaria (%)',
+      'Chave PIX',
+      'Banco / Repasse',
+      'Total de Eventos',
+      'Alunos na Carteira',
+      'Website',
+      'Data de Cadastro'
+    ];
+
+    const rows = list.map(p => [
+      p.id,
+      p.nome_fantasia || '',
+      p.razao_social || '',
+      p.cnpj || '',
+      p.email || '',
+      p.telefone || '',
+      p.responsavel || '',
+      p.categoria || 'Promotor',
+      p.status || 'ativo',
+      p.usuario || '',
+      parseFloat(p.comissao_inscricao_pct || 10).toFixed(1),
+      parseFloat(p.comissao_hotelaria_pct || 8).toFixed(1),
+      p.chave_pix || '',
+      p.banco_repasse || '',
+      p.total_eventos || 0,
+      p.total_alunos_carteira || 0,
+      p.website || '',
+      p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : ''
+    ]);
+
+    this.exportToCSV('UNYCO_Parceiros', headers, rows);
+  },
+
+  exportEventsCSV() {
+    const list = this.state.events || [];
+    const headers = [
+      'ID',
+      'Nome do Evento',
+      'Categoria',
+      'Parceiro Realizador',
+      'Modalidade',
+      'Tipo de Local',
+      'Local / Endereço',
+      'Cidade',
+      'UF',
+      'Data e Hora Início',
+      'Data e Hora Término',
+      'Capacidade Total',
+      'Total Inscritos',
+      'Vagas Restantes',
+      'Valor Inscrição (R$)',
+      'Status',
+      'Disponibilidade Extra (DEX)',
+      'Data de Criação'
+    ];
+
+    const rows = list.map(e => {
+      const cap = parseInt(e.capacidade || 100, 10);
+      const insc = parseInt(e.total_inscritos || 0, 10);
+      return [
+        e.id,
+        e.nome || '',
+        e.categoria_nome || 'Geral',
+        e.parceiro_nome || '',
+        e.modalidade || '',
+        e.tipo_local || 'Ar Livre',
+        e.local || '',
+        e.cidade || '',
+        e.estado || '',
+        e.data_inicio ? new Date(e.data_inicio).toLocaleString('pt-BR') : '',
+        e.data_fim ? new Date(e.data_fim).toLocaleString('pt-BR') : '',
+        cap,
+        insc,
+        Math.max(0, cap - insc),
+        parseFloat(e.valor_inscricao || 0).toFixed(2).replace('.', ','),
+        e.status || 'Agendado',
+        e.is_dex ? 'Sim (DEX)' : 'Não (Prazo Regular)',
+        e.created_at ? new Date(e.created_at).toLocaleString('pt-BR') : ''
+      ];
+    });
+
+    this.exportToCSV('UNYCO_Eventos_Calendario', headers, rows);
+  },
+
+  exportProposalsCSV() {
+    const list = this.state.proposals || [];
+    const headers = [
+      'ID',
+      'Código Proposta',
+      'Título da Proposta',
+      'Parceiro / Lead',
+      'Contato Responsável',
+      'E-mail',
+      'Telefone / WhatsApp',
+      'Cidade',
+      'UF',
+      'Modalidade Esportiva',
+      'Estimativa de Atletas',
+      'Volume Total Estimado (R$)',
+      'Comissão Inscrições (%)',
+      'Comissão Hotelaria (%)',
+      'Status da Proposta',
+      'Data de Validade',
+      'Observações Comerciais',
+      'Data de Criação'
+    ];
+
+    const rows = list.map(p => [
+      p.id,
+      p.codigo_proposta || '',
+      p.titulo || '',
+      p.parceiro_nome || '',
+      p.contato_nome || '',
+      p.contato_email || '',
+      p.contato_telefone || '',
+      p.cidade || '',
+      p.estado || '',
+      p.modalidade || '',
+      p.estimativa_participantes || 0,
+      parseFloat(p.valor_total_estimado || 0).toFixed(2).replace('.', ','),
+      parseFloat(p.comissao_inscricao_pct || 10).toFixed(1),
+      parseFloat(p.comissao_hotel_pct || 8).toFixed(1),
+      p.status || 'Rascunho',
+      p.data_validade ? new Date(p.data_validade).toLocaleDateString('pt-BR') : '',
+      p.observacoes || '',
+      p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : ''
+    ]);
+
+    this.exportToCSV('UNYCO_Propostas_Comerciais', headers, rows);
+  },
+
+  exportCurrentWalletStudentsCSV() {
+    const list = this.state.walletStudentsCache || [];
+    const partner = this.state.selectedPartnerWallet;
+    const partnerName = partner ? partner.nome_fantasia : 'Parceiro';
+
+    const headers = [
+      'ID Inscrição',
+      'Código Matrícula / Registro',
+      'Nome Completo',
+      'Vínculo / Categoria',
+      'CPF',
+      'E-mail',
+      'WhatsApp / Telefone',
+      'Data de Nascimento',
+      'Gênero',
+      'Tamanho Camiseta',
+      'Parceiro / Academia',
+      'Evento Vinculado',
+      'Status Pagamento',
+      'Valor Pago (R$)',
+      'Comissão Parceiro (R$)',
+      'Origem do Cadastro',
+      'Observações / Turma',
+      'Data de Cadastro'
+    ];
+
+    const rows = list.map(i => [
+      i.id,
+      i.codigo_inscricao || '',
+      i.nome_completo || '',
+      i.categoria_aluno || 'Aluno',
+      i.cpf || '',
+      i.email || '',
+      i.telefone || '',
+      i.data_nascimento ? new Date(i.data_nascimento).toLocaleDateString('pt-BR') : '',
+      i.genero || '',
+      i.tamanho_camiseta || 'M',
+      partnerName,
+      i.evento_nome || 'Carteira Geral / Promoções Internas',
+      i.status_pagamento || 'Confirmado',
+      parseFloat(i.valor_pago || 0).toFixed(2).replace('.', ','),
+      parseFloat(i.comissao_parceiro_inscricao || 0).toFixed(2).replace('.', ','),
+      i.origem_inscricao || 'CARTEIRA',
+      i.observacoes || '',
+      i.created_at ? new Date(i.created_at).toLocaleString('pt-BR') : ''
+    ]);
+
+    const safePartner = partnerName.replace(/[^a-zA-Z0-9]/g, '_');
+    this.exportToCSV(`UNYCO_Carteira_Alunos_${safePartner}`, headers, rows);
+  },
+
+  async exportAllWalletStudentsCSV() {
+    try {
+      this.showToast('Buscando base de alunos de todas as carteiras...', 'info');
+      const res = await fetch(this.urlWithBase('/api/registrations'));
+      const json = await res.json();
+      if (!json.success || !json.data) {
+        this.showToast('Erro ao consultar inscrições.', 'error');
+        return;
+      }
+
+      const list = json.data;
+      const headers = [
+        'ID Inscrição',
+        'Código Matrícula / Registro',
+        'Nome Completo',
+        'Vínculo / Categoria',
+        'CPF',
+        'E-mail',
+        'WhatsApp / Telefone',
+        'Data de Nascimento',
+        'Gênero',
+        'Tamanho Camiseta',
+        'Parceiro / Academia',
+        'Evento Vinculado',
+        'Status Pagamento',
+        'Valor Pago (R$)',
+        'Comissão Parceiro (R$)',
+        'Origem do Cadastro',
+        'Observações / Turma',
+        'Data de Cadastro'
+      ];
+
+      const rows = list.map(i => [
+        i.id,
+        i.codigo_inscricao || '',
+        i.nome_completo || '',
+        i.categoria_aluno || 'Aluno',
+        i.cpf || '',
+        i.email || '',
+        i.telefone || '',
+        i.data_nascimento ? new Date(i.data_nascimento).toLocaleDateString('pt-BR') : '',
+        i.genero || '',
+        i.tamanho_camiseta || 'M',
+        i.parceiro_nome || '',
+        i.evento_nome || 'Carteira Geral / Promoções Internas',
+        i.status_pagamento || 'Confirmado',
+        parseFloat(i.valor_pago || 0).toFixed(2).replace('.', ','),
+        parseFloat(i.comissao_parceiro_inscricao || 0).toFixed(2).replace('.', ','),
+        i.origem_inscricao || '',
+        i.observacoes || '',
+        i.created_at ? new Date(i.created_at).toLocaleString('pt-BR') : ''
+      ]);
+
+      this.exportToCSV('UNYCO_Carteira_Alunos_Consolidada', headers, rows);
+    } catch (err) {
+      console.error('Erro ao exportar carteira consolidada:', err);
+      this.showToast('Erro ao exportar carteira de alunos.', 'error');
+    }
+  },
+
+  exportHotelLeadsCSV() {
+    const list = this.state.hotelLeads || [];
+    const headers = [
+      'ID Lead',
+      'Hóspede / Atleta',
+      'E-mail',
+      'WhatsApp / Telefone',
+      'Tipo / Grupo',
+      'Evento Vinculado',
+      'Hotel Credenciado UNYCO',
+      'Cidade / UF Hotel',
+      'Qtd Hóspedes',
+      'Qtd Quartos',
+      'Valor Total Estimado (R$)',
+      'Comissão Parceiro (%)',
+      'Valor Comissão Parceiro (R$)',
+      'Status da Reserva',
+      'Observações',
+      'Data da Solicitação'
+    ];
+
+    const rows = list.map(r => [
+      r.id,
+      r.nome_hospede || '',
+      r.email || '',
+      r.telefone || '',
+      r.tipo_publico || 'Atleta / Participante',
+      r.evento_nome || '',
+      r.hotel_nome || 'Hotel Curadoria UNYCO',
+      r.hotel_cidade || '',
+      r.qtd_hospedes || 1,
+      r.qtd_quartos || 1,
+      parseFloat(r.valor_total_estimado || 0).toFixed(2).replace('.', ','),
+      `${parseFloat(r.comissao_parceiro_pct || 8).toFixed(1)}%`,
+      parseFloat(r.comissao_parceiro_valor || 0).toFixed(2).replace('.', ','),
+      r.status || 'Pendente',
+      r.observacoes || '',
+      r.created_at ? new Date(r.created_at).toLocaleString('pt-BR') : ''
+    ]);
+
+    this.exportToCSV('UNYCO_Reservas_Hotelaria_Leads', headers, rows);
+  },
+
+  exportEarningsExtratoCSV() {
+    const earnings = this.state.earningsData;
+    const list = (earnings && earnings.partners) || [];
+
+    const headers = [
+      'ID Parceiro',
+      'Nome do Parceiro',
+      'Taxa Inscrições (%)',
+      'Taxa Hotelaria (%)',
+      'Ganhos em Inscrições (R$)',
+      'Ganhos em Hotelaria (R$)',
+      'Total a Receber (R$)',
+      'Chave PIX',
+      'Banco / Repasse',
+      'Status Parceiro'
+    ];
+
+    const rows = list.map(p => [
+      p.id,
+      p.nome_fantasia || '',
+      parseFloat(p.comissao_inscricao_pct || 10).toFixed(1),
+      parseFloat(p.comissao_hotelaria_pct || 8).toFixed(1),
+      parseFloat(p.ganhos_inscricoes || 0).toFixed(2).replace('.', ','),
+      parseFloat(p.ganhos_hotelaria || 0).toFixed(2).replace('.', ','),
+      parseFloat(p.total_a_receber || 0).toFixed(2).replace('.', ','),
+      p.chave_pix || '',
+      p.banco_repasse || '',
+      p.status || 'ativo'
+    ]);
+
+    this.exportToCSV('UNYCO_Extrato_Repasses_Financeiros', headers, rows);
+  },
+
+  async exportCurrentEventRegistrationsCSV() {
+    const ev = this.state.currentEventForRegistrations;
+    if (!ev) {
+      this.showToast('Nenhum evento selecionado.', 'info');
+      return;
+    }
+
+    try {
+      this.showToast(`Buscando inscritos de "${ev.nome}"...`, 'info');
+      const res = await fetch(this.urlWithBase(`/api/events/${ev.id}/registrations`));
+      const json = await res.json();
+      if (!json.success || !json.data) {
+        this.showToast('Erro ao consultar participantes do evento.', 'error');
+        return;
+      }
+
+      const list = json.data;
+      const headers = [
+        'ID Inscrição',
+        'Código Inscrição',
+        'Nome do Evento',
+        'Modalidade',
+        'Nome do Participante',
+        'CPF',
+        'E-mail',
+        'WhatsApp / Telefone',
+        'Data de Nascimento',
+        'Gênero',
+        'Tamanho Camiseta',
+        'Parceiro Indicador',
+        'Contato Emergência',
+        'Telefone Emergência',
+        'Precisa Hospedagem',
+        'Hotel Selecionado',
+        'Qtd Hóspedes',
+        'Status Pagamento',
+        'Valor Pago (R$)',
+        'Comissão Gerada (R$)',
+        'Origem Inscrição',
+        'Data Inscrição'
+      ];
+
+      const rows = list.map(i => [
+        i.id,
+        i.codigo_inscricao || '',
+        ev.nome || '',
+        ev.modalidade || '',
+        i.nome_completo || '',
+        i.cpf || '',
+        i.email || '',
+        i.telefone || '',
+        i.data_nascimento ? new Date(i.data_nascimento).toLocaleDateString('pt-BR') : '',
+        i.genero || '',
+        i.tamanho_camiseta || 'M',
+        i.parceiro_indicador_nome || ev.parceiro_nome || '',
+        i.contato_emergencia_nome || '',
+        i.contato_emergencia_telefone || '',
+        i.precisa_hospedagem ? 'Sim' : 'Não',
+        i.hotel_nome || '',
+        i.hospedagem_qtd_pessoas || 1,
+        i.status_pagamento || 'Confirmado',
+        parseFloat(i.valor_pago || 0).toFixed(2).replace('.', ','),
+        parseFloat(i.comissao_parceiro_inscricao || 0).toFixed(2).replace('.', ','),
+        i.origem_inscricao || '',
+        i.created_at ? new Date(i.created_at).toLocaleString('pt-BR') : ''
+      ]);
+
+      const safeEvent = (ev.nome || 'Evento').replace(/[^a-zA-Z0-9]/g, '_');
+      this.exportToCSV(`UNYCO_Inscritos_${safeEvent}`, headers, rows);
+    } catch (err) {
+      console.error('Erro ao exportar inscritos do evento:', err);
+      this.showToast('Erro ao exportar participantes.', 'error');
+    }
+  },
+
+  async exportAllRegistrationsCSV() {
+    try {
+      this.showToast('Buscando todas as inscrições em eventos...', 'info');
+      const res = await fetch(this.urlWithBase('/api/registrations'));
+      const json = await res.json();
+      if (!json.success || !json.data) {
+        this.showToast('Erro ao carregar inscrições.', 'error');
+        return;
+      }
+
+      const list = json.data;
+      const headers = [
+        'ID Inscrição',
+        'Código Inscrição',
+        'Nome do Evento',
+        'Modalidade',
+        'Cidade / UF',
+        'Parceiro Realizador / Indicador',
+        'Nome do Participante / Atleta',
+        'CPF',
+        'E-mail',
+        'WhatsApp / Telefone',
+        'Data de Nascimento',
+        'Gênero',
+        'Tamanho Camiseta',
+        'Contato Emergência',
+        'Telefone Emergência',
+        'Precisa Hospedagem',
+        'Hotel Selecionado',
+        'Qtd Hóspedes',
+        'Status Pagamento',
+        'Valor Pago (R$)',
+        'Comissão Gerada (R$)',
+        'Origem Inscrição',
+        'Observações',
+        'Data Inscrição'
+      ];
+
+      const rows = list.map(i => [
+        i.id,
+        i.codigo_inscricao || '',
+        i.evento_nome || '',
+        i.evento_modalidade || '',
+        `${i.evento_cidade || ''} / ${i.evento_estado || ''}`,
+        i.parceiro_nome || '',
+        i.nome_completo || '',
+        i.cpf || '',
+        i.email || '',
+        i.telefone || '',
+        i.data_nascimento ? new Date(i.data_nascimento).toLocaleDateString('pt-BR') : '',
+        i.genero || '',
+        i.tamanho_camiseta || 'M',
+        i.contato_emergencia_nome || '',
+        i.contato_emergencia_telefone || '',
+        i.precisa_hospedagem ? 'Sim' : 'Não',
+        i.hotel_nome || '',
+        i.hospedagem_qtd_pessoas || 1,
+        i.status_pagamento || 'Confirmado',
+        parseFloat(i.valor_pago || 0).toFixed(2).replace('.', ','),
+        parseFloat(i.comissao_parceiro_inscricao || 0).toFixed(2).replace('.', ','),
+        i.origem_inscricao || '',
+        i.observacoes || '',
+        i.created_at ? new Date(i.created_at).toLocaleString('pt-BR') : ''
+      ]);
+
+      this.exportToCSV('UNYCO_Inscritos_Consolidado_Geral', headers, rows);
+    } catch (err) {
+      console.error('Erro ao exportar lista geral de inscritos:', err);
+      this.showToast('Erro ao exportar lista de inscritos.', 'error');
+    }
+  },
+
   escapeHtml(str) {
     if (!str) return '';
     return String(str)

@@ -315,3 +315,35 @@ exports.deleteRegistration = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Erro ao excluir inscrição', error: error.message });
   }
 };
+
+// Listar todas as inscrições consolidadas do sistema (Painel Administrativo e Exportação CSV)
+exports.getAllRegistrations = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        i.*,
+        COALESCE(e.nome, 'Carteira Geral / Promoções Internas') AS evento_nome,
+        COALESCE(e.modalidade, i.categoria_aluno, 'Geral') AS evento_modalidade,
+        e.cidade AS evento_cidade,
+        e.estado AS evento_estado,
+        e.data_inicio AS evento_data_inicio,
+        p.nome_fantasia AS parceiro_nome,
+        h.nome AS hotel_nome
+      FROM inscricoes_evento i
+      LEFT JOIN eventos e ON e.id = i.evento_id
+      LEFT JOIN parceiros p ON p.id = COALESCE(i.parceiro_indicador_id, e.parceiro_id)
+      LEFT JOIN hoteis_curadoria h ON i.hospedagem_hotel_id = h.id
+      ORDER BY i.created_at DESC
+    `;
+    const result = await db.query(query);
+    return res.json({
+      success: true,
+      count: result.rowCount,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Erro ao buscar todas as inscrições:', error);
+    return res.status(500).json({ success: false, message: 'Erro ao consultar inscrições', error: error.message });
+  }
+};
+
